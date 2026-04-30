@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Entrada de Stock{% endblock %}
+{% block page_title %}Registar Entrada de Stock{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'stock:list' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-7">
+        <!-- Banner informativo -->
+        <div style="background:linear-gradient(135deg,#064e3b,#065f46);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;">
+            <div style="width:48px;height:48px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">
+                <i class="bi bi-box-arrow-in-down" style="color:#6ee7b7;"></i>
+            </div>
+            <div>
+                <div style="color:#fff;font-weight:700;font-size:1rem;">Entrada de Stock</div>
+                <div style="color:#6ee7b7;font-size:.82rem;">Registe a recepcao de produtos no inventario</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-in-down text-success"></i>
+                Dados da Entrada
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.produto.label }} <span class="text-danger">*</span></label>
+                        {{ form.produto }}
+                        {% if form.produto.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.produto.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.quantidade.label }} <span class="text-danger">*</span></label>
+                        {{ form.quantidade }}
+                        {% if form.quantidade.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.quantidade.errors.0 }}</div>{% endif %}
+                        <div class="form-text">Introduza a quantidade recebida</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success d-flex align-items-center gap-1">
+                            <i class="bi bi-check-lg"></i> Registar Entrada
+                        </button>
+                        <a href="{% url 'stock:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dica lateral -->
+    <div class="col-lg-5">
+        <div class="card" style="background:#f8faff;border:1.5px dashed #c7d2fe;">
+            <div class="card-body">
+                <div class="fw-600 mb-2" style="color:#4f46e5;"><i class="bi bi-lightbulb me-1"></i>Como funciona</div>
+                <ul style="font-size:.85rem;color:#64748b;padding-left:1.2rem;margin:0;">
+                    <li class="mb-2">Selecione o produto que recebeu</li>
+                    <li class="mb-2">Introduza a quantidade recebida</li>
+                    <li class="mb-2">O stock sera atualizado automaticamente</li>
+                    <li>O registo fica guardado no historico</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

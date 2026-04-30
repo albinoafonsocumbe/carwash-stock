@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'lavagens:list' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <div class="col-lg-7">
+        <form method="post" enctype="multipart/form-data" novalidate id="lavagemForm">
+            {% csrf_token %}
+
+            <!-- Matricula -->
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-car-front" style="color:#2563eb;"></i>
+                    Dados do Veiculo
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.matricula.label }} <span class="text-danger">*</span></label>
+                        {{ form.matricula }}
+                        {% if form.matricula.errors %}<div class="text-danger mt-1" style="font-size:.78rem;">{{ form.matricula.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <!-- Foto do veiculo -->
+                    <div>
+                        <label class="form-label">{{ form.foto.label }}</label>
+                        {{ form.foto }}
+                        <div class="form-text">Tire uma foto do veiculo antes da lavagem (opcional)</div>
+                        {% if form.foto.errors %}<div class="text-danger mt-1" style="font-size:.78rem;">{{ form.foto.errors.0 }}</div>{% endif %}
+                        <!-- Preview da foto -->
+                        <div id="fotoPreview" style="display:none;margin-top:.75rem;">
+                            <img id="fotoImg" src="" alt="Preview"
+                                 style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Servico -->
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-list-check" style="color:#475569;"></i>
+                    Servico
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.tipo_lavagem.label }} <span class="text-danger">*</span></label>
+                        {{ form.tipo_lavagem }}
+                        {% if form.tipo_lavagem.errors %}<div class="text-danger mt-1" style="font-size:.78rem;">{{ form.tipo_lavagem.errors.0 }}</div>{% endif %}
+                        <div id="tipoInfo" style="display:none;margin-top:.5rem;padding:.55rem .85rem;background:#eff6ff;border-radius:8px;font-size:.8rem;color:#1d4ed8;border:1px solid #bfdbfe;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Preco: <strong id="tipoPreco"></strong> &nbsp;·&nbsp; Duracao: <strong id="tipoDuracao"></strong>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">{{ form.funcionario.label }}</label>
+                            {{ form.funcionario }}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">{{ form.valor_cobrado.label }}</label>
+                            <div class="input-group">
+                                <span class="input-group-text">MZN</span>
+                                {% if user.is_admin %}
+                                {{ form.valor_cobrado }}
+                                {% else %}
+                                <input type="text" class="form-control" id="id_valor_cobrado_display" readonly
+                                       style="background:#f8fafc;color:#64748b;cursor:not-allowed;">
+                                <input type="hidden" name="valor_cobrado" id="id_valor_cobrado" value="0">
+                                {% endif %}
+                            </div>
+                            {% if user.is_admin %}
+                            <div class="form-text">Deixe 0 para usar o preco do servico</div>
+                            {% else %}
+                            <div class="form-text" style="color:#94a3b8;">Definido automaticamente pelo servico</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observacoes -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <label class="form-label">{{ form.observacoes.label }}</label>
+                    {{ form.observacoes }}
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary d-flex align-items-center gap-1">
+                    <i class="bi bi-check-lg"></i> {{ btn_label }}
+                </button>
+                <a href="{% url 'lavagens:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Painel lateral -->
+    <div class="col-lg-5">
+        <div class="card" style="position:sticky;top:70px;">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle" style="color:#475569;"></i>
+                Instrucoes
+            </div>
+            <div class="card-body">
+                <ul style="font-size:.82rem;color:#475569;padding-left:1.1rem;margin:0;line-height:2;">
+                    <li>Introduza a matricula do veiculo</li>
+                    <li>Tire uma foto do carro (opcional)</li>
+                    <li>Selecione o tipo de lavagem</li>
+                    <li>O valor e preenchido automaticamente</li>
+                    <li>Adicione observacoes se necessario</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const tipos = {{ tipos_info|safe }};
+const select = document.getElementById('id_tipo_lavagem');
+const info = document.getElementById('tipoInfo');
+const precoEl = document.getElementById('tipoPreco');
+const duracaoEl = document.getElementById('tipoDuracao');
+const valorInput = document.getElementById('id_valor_cobrado');
+const fotoInput = document.getElementById('id_foto');
+const fotoPreview = document.getElementById('fotoPreview');
+const fotoImg = document.getElementById('fotoImg');
+
+function updateInfo() {
+    const id = select.value;
+    if (id && tipos[id]) {
+        precoEl.textContent = tipos[id].preco + ' MZN';
+        duracaoEl.textContent = tipos[id].duracao + ' min';
+        info.style.display = 'block';
+        // Campo display para funcionarios (readonly)
+        const displayInput = document.getElementById('id_valor_cobrado_display');
+        if (displayInput) {
+            displayInput.value = tipos[id].preco + ' MZN';
+            document.getElementById('id_valor_cobrado').value = tipos[id].preco;
+        } else if (valorInput && (!valorInput.value || parseFloat(valorInput.value) === 0)) {
+            valorInput.value = tipos[id].preco;
+        }
+    } else {
+        info.style.display = 'none';
+    }
+}
+
+select.addEventListener('change', updateInfo);
+updateInfo();
+
+// Preview da foto
+if (fotoInput) {
+    fotoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                fotoImg.src = e.target.result;
+                fotoPreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            fotoPreview.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

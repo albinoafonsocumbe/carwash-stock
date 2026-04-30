@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar Servico{% endblock %}
+{% block page_title %}Eliminar Servico{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'services:list' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card" style="border:1.5px solid #fecaca;">
+            <div class="card-header text-danger d-flex align-items-center gap-2" style="background:#fef2f2;">
+                <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminacao
+            </div>
+            <div class="card-body">
+                <p class="mb-1" style="color:#64748b;">Tem a certeza que pretende eliminar o servico:</p>
+                <p class="fw-bold fs-5 mb-1">{{ object.nome }}</p>
+                {% if object.descricao %}
+                <p style="font-size:.85rem;color:#94a3b8;margin-bottom:1rem;">{{ object.descricao }}</p>
+                {% endif %}
+                <div class="alert alert-warning py-2 d-flex align-items-center gap-2" style="font-size:.82rem;">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    Esta acao nao pode ser revertida.
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger d-flex align-items-center gap-1">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                        <a href="{% url 'services:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

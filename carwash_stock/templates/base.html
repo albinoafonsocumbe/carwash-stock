@@ -1,0 +1,322 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CarWash Stock{% endblock %} — CarWash</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-w: 252px;
+            --topbar-h: 58px;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-light: #eff6ff;
+            --sidebar-bg: #0f172a;
+            --sidebar-border: rgba(255,255,255,.06);
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --warning: #d97706;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; font-size: .875rem; }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: var(--sidebar-w); height: 100vh;
+            background: var(--sidebar-bg);
+            display: flex; flex-direction: column;
+            z-index: 200; overflow-y: auto;
+            border-right: 1px solid var(--sidebar-border);
+        }
+        .sidebar::-webkit-scrollbar { width: 0; }
+
+        .sidebar-brand {
+            display: flex; align-items: center; gap: .75rem;
+            padding: 1.25rem 1.25rem 1rem;
+            border-bottom: 1px solid var(--sidebar-border);
+            text-decoration: none; margin-bottom: .25rem;
+        }
+        .brand-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            background: var(--accent);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .brand-icon i { color: #fff; font-size: 1rem; }
+        .brand-name { color: #fff; font-weight: 700; font-size: .95rem; line-height: 1.2; }
+        .brand-tagline { color: rgba(255,255,255,.3); font-size: .65rem; font-weight: 400; }
+
+        .nav-group-label {
+            padding: .9rem 1.25rem .3rem;
+            font-size: .6rem; font-weight: 700;
+            letter-spacing: .12em; text-transform: uppercase;
+            color: rgba(255,255,255,.2);
+        }
+        .nav-items { list-style: none; padding: 0 .75rem; margin: 0 0 .25rem; }
+        .nav-items li a {
+            display: flex; align-items: center; gap: .65rem;
+            padding: .55rem .85rem; border-radius: 8px; margin-bottom: 1px;
+            color: rgba(255,255,255,.5); text-decoration: none;
+            font-size: .82rem; font-weight: 500; transition: background .15s, color .15s;
+        }
+        .nav-items li a i { font-size: .95rem; width: 18px; text-align: center; flex-shrink: 0; }
+        .nav-items li a:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+        .nav-items li a.active {
+            background: rgba(37,99,235,.25);
+            color: #93c5fd;
+            border: 1px solid rgba(37,99,235,.3);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: .85rem 1rem;
+            border-top: 1px solid var(--sidebar-border);
+        }
+        .user-row {
+            display: flex; align-items: center; gap: .65rem;
+            padding: .6rem .75rem; border-radius: 10px;
+            background: rgba(255,255,255,.05);
+        }
+        .user-avatar {
+            width: 32px; height: 32px; border-radius: 8px;
+            background: var(--accent);
+            color: #fff; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: .8rem; flex-shrink: 0;
+        }
+        .user-name { color: #fff; font-size: .78rem; font-weight: 600; line-height: 1.2; }
+        .user-role { color: rgba(255,255,255,.3); font-size: .65rem; }
+        .logout-btn {
+            margin-left: auto; background: none; border: none; cursor: pointer;
+            color: rgba(255,255,255,.3); padding: .3rem; border-radius: 6px;
+            transition: color .15s, background .15s; line-height: 1;
+        }
+        .logout-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+
+        /* ── Main layout ── */
+        .main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+
+        .topbar {
+            height: var(--topbar-h); background: #fff;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 1.5rem; gap: 1rem;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .topbar-title { font-weight: 700; font-size: .95rem; color: var(--text); flex: 1; }
+        .topbar-actions { display: flex; align-items: center; gap: .5rem; }
+
+        .page-body { padding: 1.5rem; flex: 1; }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04);
+        }
+        .card-header {
+            background: #fff; border-bottom: 1px solid var(--border);
+            font-weight: 600; padding: .9rem 1.25rem; font-size: .85rem;
+            border-radius: 12px 12px 0 0;
+        }
+        .card-body { padding: 1.25rem; }
+        .card-footer {
+            background: #fafafa; border-top: 1px solid var(--border);
+            padding: .75rem 1.25rem; border-radius: 0 0 12px 12px;
+        }
+
+        /* ── Stat cards ── */
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,.04);
+            transition: box-shadow .2s, transform .2s;
+        }
+        .stat-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-2px); }
+        .stat-icon {
+            width: 44px; height: 44px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        }
+        .stat-value { font-size: 1.9rem; font-weight: 800; line-height: 1; margin-top: .75rem; }
+        .stat-label { font-size: .75rem; color: var(--muted); margin-top: .25rem; font-weight: 500; }
+
+        /* ── Badges ── */
+        .badge-status {
+            display: inline-flex; align-items: center; gap: .3rem;
+            font-size: .7rem; padding: .25em .65em; border-radius: 20px; font-weight: 600;
+        }
+        .bs-success { background: #dcfce7; color: #15803d; }
+        .bs-warning { background: #fef9c3; color: #a16207; }
+        .bs-danger  { background: #fee2e2; color: #b91c1c; }
+        .bs-info    { background: #dbeafe; color: #1d4ed8; }
+        .bs-gray    { background: #f1f5f9; color: #475569; }
+
+        /* ── Forms ── */
+        .form-label { font-weight: 600; font-size: .8rem; color: var(--text); margin-bottom: .35rem; }
+        .form-control, .form-select {
+            border: 1.5px solid var(--border); border-radius: 8px;
+            font-size: .85rem; padding: .55rem .85rem;
+            font-family: 'Inter', sans-serif; transition: border-color .15s, box-shadow .15s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,.1); outline: none;
+        }
+        .input-group-text {
+            background: #f8fafc; border: 1.5px solid var(--border);
+            font-size: .82rem; color: var(--muted);
+        }
+
+        /* ── Buttons ── */
+        .btn { border-radius: 8px; font-weight: 600; font-size: .82rem; padding: .48rem 1rem; transition: all .15s; }
+        .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); color: #fff; }
+        .btn-success { background: #16a34a; border-color: #16a34a; color: #fff; }
+        .btn-success:hover { background: #15803d; border-color: #15803d; color: #fff; }
+        .btn-danger { background: #dc2626; border-color: #dc2626; color: #fff; }
+        .btn-danger:hover { background: #b91c1c; border-color: #b91c1c; color: #fff; }
+        .btn-outline-primary { border-color: var(--accent); color: var(--accent); }
+        .btn-outline-primary:hover { background: var(--accent); color: #fff; }
+        .btn-outline-secondary { border-color: var(--border); color: var(--muted); }
+        .btn-outline-secondary:hover { background: #f1f5f9; color: var(--text); border-color: #cbd5e1; }
+        .btn-outline-danger { border-color: #fca5a5; color: #dc2626; }
+        .btn-outline-danger:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+        .btn-outline-warning { border-color: #fcd34d; color: #d97706; }
+        .btn-outline-warning:hover { background: #d97706; color: #fff; border-color: #d97706; }
+
+        /* ── Tables ── */
+        .table { font-size: .83rem; margin: 0; }
+        .table thead th {
+            background: #f8fafc; font-weight: 600; font-size: .7rem;
+            text-transform: uppercase; letter-spacing: .07em; color: var(--muted);
+            border-bottom: 1px solid var(--border); padding: .75rem 1rem;
+        }
+        .table td { vertical-align: middle; padding: .8rem 1rem; border-color: #f1f5f9; }
+        .table tbody tr:hover { background: #fafbff; }
+
+        /* ── Alerts ── */
+        .alert { border-radius: 10px; font-size: .83rem; border: none; padding: .75rem 1rem; }
+        .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+        .alert-danger  { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .alert-info    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if user.is_authenticated %}
+<aside class="sidebar">
+    <a href="{% url 'dashboard:index' %}" class="sidebar-brand">
+        <div class="brand-icon"><i class="bi bi-droplet-fill"></i></div>
+        <div>
+            <div class="brand-name">CarWash Stock</div>
+            <div class="brand-tagline">Gestao de Inventario</div>
+        </div>
+    </a>
+
+    <div class="nav-group-label">Principal</div>
+    <ul class="nav-items">
+        <li><a href="{% url 'dashboard:index' %}" class="{% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+            <i class="bi bi-grid-fill"></i> Dashboard
+        </a></li>
+    </ul>
+
+    <div class="nav-group-label">Inventario</div>
+    <ul class="nav-items">
+        <li><a href="{% url 'products:list' %}" class="{% if request.resolver_match.app_name == 'products' %}active{% endif %}">
+            <i class="bi bi-box-seam"></i> Produtos
+        </a></li>
+        <li><a href="{% url 'stock:list' %}" class="{% if request.resolver_match.app_name == 'stock' %}active{% endif %}">
+            <i class="bi bi-arrow-left-right"></i> Movimentacoes
+        </a></li>
+        {% if user.is_admin %}
+        <li><a href="{% url 'stock:entry_create' %}">
+            <i class="bi bi-box-arrow-in-down"></i> Entrada de Stock
+        </a></li>
+        {% endif %}
+        <li><a href="{% url 'stock:exit_create' %}">
+            <i class="bi bi-box-arrow-up"></i> Saida de Stock
+        </a></li>
+    </ul>
+
+    <div class="nav-group-label">Lavagens</div>
+    <ul class="nav-items">
+        <li><a href="{% url 'lavagens:list' %}" class="{% if request.resolver_match.app_name == 'lavagens' %}active{% endif %}">
+            <i class="bi bi-car-front"></i> Registo de Lavagens
+        </a></li>
+        {% if user.is_admin %}
+        <li><a href="{% url 'services:list' %}" class="{% if request.resolver_match.app_name == 'services' %}active{% endif %}">
+            <i class="bi bi-list-check"></i> Servicos
+        </a></li>
+        {% endif %}
+    </ul>
+
+    {% if user.is_admin %}
+    <div class="nav-group-label">Administracao</div>
+    <ul class="nav-items">
+        <li><a href="{% url 'accounts:user_list' %}">
+            <i class="bi bi-people"></i> Utilizadores
+        </a></li>
+        <li><a href="{% url 'reports:index' %}">
+            <i class="bi bi-bar-chart"></i> Relatorios
+        </a></li>
+    </ul>
+    {% endif %}
+
+    <div class="sidebar-footer">
+        <div class="user-row">
+            <div class="user-avatar">{{ user.username|first|upper }}</div>
+            <div>
+                <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="user-role">{{ user.get_perfil_display }}</div>
+            </div>
+            <form method="post" action="{% url 'accounts:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="logout-btn" title="Sair">
+                    <i class="bi bi-box-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</aside>
+
+<div class="main-wrap">
+    <div class="topbar">
+        <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+        <div class="topbar-actions">{% block topbar_actions %}{% endblock %}</div>
+    </div>
+
+    {% if messages %}
+    <div style="padding:.75rem 1.5rem 0;">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-{% if message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="page-body">{% block content %}{% endblock %}</div>
+</div>
+
+{% else %}
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

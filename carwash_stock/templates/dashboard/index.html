@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'lavagens:create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+    <i class="bi bi-plus-lg"></i> Nova Lavagem
+</a>
+{% if user.is_admin %}
+<a href="{% url 'stock:entry_create' %}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+    <i class="bi bi-box-arrow-in-down"></i> Entrada de Stock
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<!-- Cabecalho da pagina -->
+<div style="margin-bottom:1.5rem;">
+    <div style="font-size:1rem;font-weight:700;color:#0f172a;">{{ user.get_full_name|default:user.username }}</div>
+    <div style="color:#64748b;font-size:.82rem;margin-top:.15rem;">Resumo do dia — {{ user.get_perfil_display }}</div>
+</div>
+
+<!-- Linha 1 de estatisticas -->
+<div class="row g-3 mb-3">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">Lavagens Hoje</div>
+                    <div class="stat-value" style="color:#2563eb;">{{ lavagens_hoje }}</div>
+                </div>
+                <div class="stat-icon" style="background:#eff6ff;">
+                    <i class="bi bi-car-front" style="color:#2563eb;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">Receita Hoje (MZN)</div>
+                    <div class="stat-value" style="color:#16a34a;">{{ receita_hoje|floatformat:0 }}</div>
+                </div>
+                <div class="stat-icon" style="background:#f0fdf4;">
+                    <i class="bi bi-cash-coin" style="color:#16a34a;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">Produtos em Stock</div>
+                    <div class="stat-value" style="color:#0f172a;">{{ total_produtos }}</div>
+                </div>
+                <div class="stat-icon" style="background:#f1f5f9;">
+                    <i class="bi bi-box-seam" style="color:#475569;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">Alertas de Stock</div>
+                    <div class="stat-value" style="color:{% if produtos_alerta %}#d97706{% else %}#16a34a{% endif %};">
+                        {{ produtos_alerta|length }}
+                    </div>
+                </div>
+                <div class="stat-icon" style="background:{% if produtos_alerta %}#fffbeb{% else %}#f0fdf4{% endif %};">
+                    <i class="bi bi-{% if produtos_alerta %}exclamation-triangle{% else %}check-circle{% endif %}"
+                       style="color:{% if produtos_alerta %}#d97706{% else %}#16a34a{% endif %};"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Linha 2 de estatisticas -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="stat-card" style="background:#0f172a;border-color:#0f172a;">
+            <div class="stat-label" style="color:#64748b;">Receita Total</div>
+            <div class="stat-value" style="color:#fff;font-size:1.6rem;">{{ receita_total|floatformat:0 }}</div>
+            <div style="color:#475569;font-size:.72rem;margin-top:.3rem;">{{ total_lavagens }} lavagens registadas</div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">Entradas Hoje</div>
+                    <div class="stat-value" style="color:#16a34a;">{{ total_entradas_hoje }}</div>
+                </div>
+                <div class="stat-icon" style="background:#f0fdf4;">
+                    <i class="bi bi-box-arrow-in-down" style="color:#16a34a;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">Saidas Hoje</div>
+                    <div class="stat-value" style="color:#dc2626;">{{ total_saidas_hoje }}</div>
+                </div>
+                <div class="stat-icon" style="background:#fef2f2;">
+                    <i class="bi bi-box-arrow-up" style="color:#dc2626;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between">
+                <div>
+                    <div class="stat-label">Stock Normal</div>
+                    <div class="stat-value" style="color:#16a34a;">{{ produtos_normais }}</div>
+                </div>
+                <div class="stat-icon" style="background:#f0fdf4;">
+                    <i class="bi bi-check-circle" style="color:#16a34a;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Conteudo principal -->
+<div class="row g-3">
+
+    {% if produtos_alerta %}
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle" style="color:#d97706;"></i>
+                    Alertas de Stock
+                </span>
+                <span class="badge-status bs-warning">{{ produtos_alerta|length }}</span>
+            </div>
+            <div class="card-body p-0">
+                {% for p in produtos_alerta %}
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem 1.25rem;{% if not forloop.last %}border-bottom:1px solid #f1f5f9;{% endif %}">
+                    <div>
+                        <div style="font-weight:600;font-size:.83rem;">{{ p.nome }}</div>
+                        <div style="font-size:.72rem;color:#94a3b8;">Min: {{ p.nivel_minimo }} {{ p.unidade }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:700;color:#dc2626;font-size:.88rem;">{{ p.quantidade }}</div>
+                        <div style="font-size:.7rem;color:#94a3b8;">{{ p.unidade }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'products:list' %}" class="btn btn-sm btn-outline-warning w-100">Ver todos os produtos</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Ultimas lavagens -->
+    <div class="col-lg-{% if produtos_alerta %}8{% else %}6{% endif %}">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-car-front" style="color:#2563eb;"></i>
+                    Ultimas Lavagens
+                </span>
+                <a href="{% url 'lavagens:list' %}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Matricula</th>
+                            <th>Servico</th>
+                            <th class="text-end">Valor (MZN)</th>
+                            <th class="text-end">Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lav in ultimas_lavagens %}
+                        <tr>
+                            <td>
+                                <span style="background:#eff6ff;color:#1d4ed8;padding:.2em .55em;border-radius:5px;font-weight:700;font-size:.78rem;font-family:monospace;letter-spacing:.03em;">
+                                    {{ lav.matricula }}
+                                </span>
+                            </td>
+                            <td style="color:#374151;">
+                                {% if lav.tipo_lavagem %}{{ lav.tipo_lavagem.nome }}{% else %}<span style="color:#cbd5e1;">—</span>{% endif %}
+                            </td>
+                            <td class="text-end" style="font-weight:700;color:#16a34a;">{{ lav.valor_cobrado|floatformat:0 }}</td>
+                            <td class="text-end" style="color:#94a3b8;">{{ lav.data|date:"H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4" style="color:#cbd5e1;">
+                                <i class="bi bi-car-front d-block mb-1" style="font-size:1.4rem;"></i>
+                                Nenhuma lavagem hoje
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ultimas movimentacoes -->
+    {% if not produtos_alerta %}
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-arrow-left-right" style="color:#475569;"></i>
+                    Movimentacoes de Stock
+                </span>
+                <a href="{% url 'stock:list' %}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th class="text-center">Tipo</th>
+                            <th class="text-end">Qtd.</th>
+                            <th class="text-end">Hora</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mov in ultimas_movimentacoes %}
+                        <tr>
+                            <td style="font-weight:500;">{{ mov.produto.nome }}</td>
+                            <td class="text-center">
+                                {% if mov.tipo == 'entrada' %}
+                                <span class="badge-status bs-success">Entrada</span>
+                                {% else %}
+                                <span class="badge-status bs-warning">Saida</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">{{ mov.quantidade }} <span style="color:#94a3b8;font-size:.72rem;">{{ mov.produto.unidade }}</span></td>
+                            <td class="text-end" style="color:#94a3b8;">{{ mov.data|date:"H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4" style="color:#cbd5e1;">
+                                <i class="bi bi-arrow-left-right d-block mb-1" style="font-size:1.4rem;"></i>
+                                Sem movimentacoes hoje
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Acoes rapidas -->
+<div class="row g-3 mt-1">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">Acoes Rapidas</div>
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{% url 'lavagens:create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-car-front"></i> Registar Lavagem
+                    </a>
+                    {% if user.is_admin %}
+                    <a href="{% url 'stock:entry_create' %}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-box-arrow-in-down"></i> Entrada de Stock
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'stock:exit_create' %}" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-box-arrow-up"></i> Saida de Stock
+                    </a>
+                    <a href="{% url 'products:list' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-box-seam"></i> Produtos
+                    </a>
+                    <a href="{% url 'services:list' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-list-check"></i> Servicos
+                    </a>
+                    {% if user.is_admin %}
+                    <a href="{% url 'reports:index' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-bar-chart"></i> Relatorios
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

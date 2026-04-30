@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Eliminar Lavagem{% endblock %}
+{% block page_title %}Eliminar Lavagem{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card border-danger">
+            <div class="card-header text-danger d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-triangle"></i> Confirmar Eliminação
+            </div>
+            <div class="card-body">
+                <p>Tem a certeza que pretende eliminar a lavagem do veículo:</p>
+                <p class="fw-bold fs-5">{{ object.matricula }}</p>
+                <p style="font-size:.875rem;color:#64748b;">{{ object.tipo_lavagem }} · {{ object.data|date:"d/m/Y H:i" }}</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger d-flex align-items-center gap-1">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                        <a href="{% url 'lavagens:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

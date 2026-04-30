@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% block title %}Saida de Stock{% endblock %}
+{% block page_title %}Registar Saida de Stock{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'stock:list' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-7">
+        <!-- Banner informativo -->
+        <div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;">
+            <div style="width:48px;height:48px;background:rgba(255,255,255,.12);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;">
+                <i class="bi bi-box-arrow-up" style="color:#fca5a5;"></i>
+            </div>
+            <div>
+                <div style="color:#fff;font-weight:700;font-size:1rem;">Saida de Stock</div>
+                <div style="color:#fca5a5;font-size:.82rem;">Registe a utilizacao ou saida de produtos do inventario</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header d-flex align-items-center gap-2">
+                <i class="bi bi-box-arrow-up text-danger"></i>
+                Dados da Saida
+            </div>
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger py-2 d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-circle"></i>
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.produto.label }} <span class="text-danger">*</span></label>
+                        {{ form.produto }}
+                        {% if form.produto.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.produto.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.quantidade.label }} <span class="text-danger">*</span></label>
+                        {{ form.quantidade }}
+                        {% if form.quantidade.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.quantidade.errors.0 }}</div>{% endif %}
+                        <div class="form-text">Nao pode exceder o stock disponivel</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger d-flex align-items-center gap-1">
+                            <i class="bi bi-check-lg"></i> Registar Saida
+                        </button>
+                        <a href="{% url 'stock:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dica lateral -->
+    <div class="col-lg-5">
+        <div class="card" style="background:#fff5f5;border:1.5px dashed #fecaca;">
+            <div class="card-body">
+                <div class="fw-600 mb-2" style="color:#dc2626;"><i class="bi bi-info-circle me-1"></i>Atencao</div>
+                <ul style="font-size:.85rem;color:#64748b;padding-left:1.2rem;margin:0;">
+                    <li class="mb-2">Verifique o stock disponivel antes de registar</li>
+                    <li class="mb-2">A quantidade nao pode ser superior ao stock atual</li>
+                    <li class="mb-2">O stock sera deduzido automaticamente</li>
+                    <li>Se o stock ficar abaixo do nivel minimo, sera gerado um alerta</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Stock atual dos produtos -->
+        <div class="card mt-3">
+            <div class="card-header" style="font-size:.82rem;">Stock Atual</div>
+            <div class="card-body p-0">
+                {% load static %}
+                <div id="stock-info" style="padding:.75rem 1rem;font-size:.82rem;color:#64748b;">
+                    Selecione um produto para ver o stock disponivel
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('id_produto').addEventListener('change', function() {
+    const sel = this.options[this.selectedIndex];
+    const info = document.getElementById('stock-info');
+    if (sel.value) {
+        info.innerHTML = '<i class="bi bi-box-seam me-1" style="color:#4f46e5;"></i>Produto selecionado: <strong>' + sel.text + '</strong>';
+    } else {
+        info.textContent = 'Selecione um produto para ver o stock disponivel';
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

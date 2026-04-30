@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Tipos de Lavagem{% endblock %}
+{% block page_title %}Tipos de Lavagem{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'lavagens:tipo_create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+    <i class="bi bi-plus-lg"></i> Novo Tipo
+</a>
+<a href="{% url 'lavagens:dashboard' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    {% for tipo in tipos %}
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-start justify-content-between mb-2">
+                    <div>
+                        <div style="font-weight:700;font-size:1rem;">{{ tipo.nome }}</div>
+                        {% if tipo.is_active %}
+                        <span class="badge-pill badge-success">Ativo</span>
+                        {% else %}
+                        <span class="badge-pill badge-neutral">Inativo</span>
+                        {% endif %}
+                    </div>
+                    <div style="font-size:1.5rem;font-weight:800;color:#4f46e5;">{{ tipo.preco|floatformat:0 }}<span style="font-size:.7rem;font-weight:500;color:#64748b;"> MZN</span></div>
+                </div>
+                {% if tipo.descricao %}
+                <p style="font-size:.82rem;color:#64748b;margin-bottom:.75rem;">{{ tipo.descricao }}</p>
+                {% endif %}
+                <div class="d-flex align-items-center gap-3" style="font-size:.8rem;color:#64748b;margin-bottom:1rem;">
+                    <span><i class="bi bi-clock me-1"></i>{{ tipo.duracao_minutos }} min</span>
+                    <span><i class="bi bi-car-front me-1"></i>{{ tipo.total }} lavagens</span>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'lavagens:tipo_update' tipo.pk %}" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{% url 'lavagens:create' %}?tipo={{ tipo.id }}" class="btn btn-sm btn-success d-flex align-items-center gap-1">
+                        <i class="bi bi-play-fill"></i> Iniciar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5" style="color:#94a3b8;">
+                <i class="bi bi-list-stars d-block mb-2" style="font-size:2rem;opacity:.3;"></i>
+                Nenhum tipo de lavagem configurado
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

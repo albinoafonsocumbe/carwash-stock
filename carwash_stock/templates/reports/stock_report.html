@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Relatório de Movimentações{% endblock %}
+{% block page_title %}Relatório de Movimentações{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'reports:export_stock_pdf' %}{% if data_inicio %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}{% endif %}" class="btn btn-sm btn-danger d-flex align-items-center gap-1">
+    <i class="bi bi-file-earmark-pdf"></i> PDF
+</a>
+<a href="{% url 'reports:export_stock_csv' %}{% if data_inicio %}?data_inicio={{ data_inicio }}&data_fim={{ data_fim }}{% endif %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-download"></i> CSV
+</a>
+<a href="{% url 'reports:index' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="d-flex align-items-center gap-3 flex-wrap">
+            <div class="d-flex align-items-center gap-2">
+                <label class="form-label mb-0" style="font-size:.875rem;white-space:nowrap;">De:</label>
+                <input type="date" name="data_inicio" class="form-control form-control-sm" value="{{ data_inicio }}" style="width:150px;">
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <label class="form-label mb-0" style="font-size:.875rem;white-space:nowrap;">Até:</label>
+                <input type="date" name="data_fim" class="form-control form-control-sm" value="{{ data_fim }}" style="width:150px;">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+            {% if data_inicio or data_fim %}
+            <a href="{% url 'reports:stock' %}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Totais -->
+<div class="row g-3 mb-3">
+    <div class="col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#f0fdf4;"><i class="bi bi-box-arrow-in-down" style="color:#16a34a;"></i></div>
+                <div><div class="stat-value text-success">{{ total_entradas }}</div><div class="stat-label">Total Entradas</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon" style="background:#fef2f2;"><i class="bi bi-box-arrow-up" style="color:#dc2626;"></i></div>
+                <div><div class="stat-value text-danger">{{ total_saidas }}</div><div class="stat-label">Total Saídas</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr><th>Data</th><th>Produto</th><th class="text-center">Tipo</th><th class="text-end">Quantidade</th></tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentos %}
+                <tr>
+                    <td class="text-muted" style="font-size:.8rem;">{{ mov.data|date:"d/m/Y H:i" }}</td>
+                    <td>{{ mov.produto.nome }}</td>
+                    <td class="text-center">
+                        {% if mov.tipo == 'entrada' %}
+                        <span class="badge-status" style="background:#f0fdf4;color:#15803d;">Entrada</span>
+                        {% else %}
+                        <span class="badge-status" style="background:#fff7ed;color:#b45309;">Saída</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">{{ mov.quantidade }} <span class="text-muted">{{ mov.produto.unidade }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted py-4">Sem movimentações no período</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

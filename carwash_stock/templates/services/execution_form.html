@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block title %}Executar: {{ servico.nome }}{% endblock %}
+{% block page_title %}Executar Servico{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'services:list' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- Card do servico -->
+    <div class="col-lg-5">
+        <div class="card" style="border-radius:18px;overflow:hidden;">
+            <!-- Foto -->
+            <div style="height:200px;overflow:hidden;background:linear-gradient(135deg,#1e1b4b,#312e81);position:relative;">
+                {% if servico.foto %}
+                <img src="{{ servico.foto.url }}" alt="{{ servico.nome }}"
+                     style="width:100%;height:100%;object-fit:cover;opacity:.85;">
+                {% else %}
+                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                    <i class="bi bi-car-front" style="font-size:3.5rem;color:rgba(255,255,255,.2);"></i>
+                </div>
+                {% endif %}
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:1rem 1.25rem;">
+                    <h4 style="color:#fff;font-weight:800;margin:0;font-size:1.1rem;">{{ servico.nome }}</h4>
+                </div>
+            </div>
+
+            <div class="card-body">
+                {% if servico.descricao %}
+                <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem;">{{ servico.descricao }}</p>
+                {% endif %}
+
+                <!-- Stats do servico -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:.75rem;text-align:center;">
+                            <div style="font-size:1.2rem;font-weight:800;color:#065f46;">{{ servico.preco|floatformat:0 }}</div>
+                            <div style="font-size:.7rem;color:#10b981;font-weight:600;text-transform:uppercase;">MZN / execucao</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:.75rem;text-align:center;">
+                            <div style="font-size:1.2rem;font-weight:800;color:#1d4ed8;">{{ servico.tempo_display }}</div>
+                            <div style="font-size:.7rem;color:#3b82f6;font-weight:600;text-transform:uppercase;">Tempo estimado</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Produtos que serao consumidos -->
+                {% if produtos_servico %}
+                <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:.5rem;">
+                    Produtos a consumir
+                </div>
+                <div style="background:#f8faff;border-radius:10px;overflow:hidden;border:1px solid #e8edf5;">
+                    {% for sp in produtos_servico %}
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:.55rem .85rem;{% if not forloop.last %}border-bottom:1px solid #e8edf5;{% endif %}">
+                        <div>
+                            <div style="font-size:.82rem;font-weight:600;color:#374151;">{{ sp.produto.nome }}</div>
+                            <div style="font-size:.72rem;color:#94a3b8;">Disponivel: {{ sp.produto.quantidade }} {{ sp.produto.unidade }}</div>
+                        </div>
+                        <span style="background:#eef2ff;color:#4f46e5;padding:.2em .65em;border-radius:6px;font-size:.75rem;font-weight:700;">
+                            {{ sp.quantidade_usada }} {{ sp.produto.unidade }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de execucao -->
+    <div class="col-lg-7">
+
+        <!-- Alerta de stock insuficiente -->
+        {% if insuficientes %}
+        <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:14px;padding:1.25rem;margin-bottom:1.25rem;">
+            <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.75rem;">
+                <i class="bi bi-exclamation-triangle-fill" style="color:#ef4444;font-size:1.1rem;"></i>
+                <strong style="color:#b91c1c;">Stock insuficiente para executar</strong>
+            </div>
+            {% for item in insuficientes %}
+            <div style="background:#fff;border-radius:8px;padding:.6rem .85rem;margin-bottom:.4rem;border:1px solid #fecaca;">
+                <div style="font-weight:600;font-size:.85rem;color:#374151;">{{ item.nome }}</div>
+                <div style="font-size:.78rem;color:#64748b;">
+                    Disponivel: <strong style="color:#ef4444;">{{ item.disponivel }} {{ item.unidade }}</strong>
+                    &nbsp;|&nbsp; Necessario: <strong>{{ item.necessario }} {{ item.unidade }}</strong>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card" style="border-radius:16px;">
+            <div class="card-header d-flex align-items-center gap-2">
+                <div style="width:32px;height:32px;background:#ecfdf5;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                    <i class="bi bi-play-fill" style="color:#10b981;"></i>
+                </div>
+                <strong>Registar Execucao</strong>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.quantidade_execucoes.label }}</label>
+                        {{ form.quantidade_execucoes }}
+                        {% if form.quantidade_execucoes.errors %}
+                        <div class="text-danger mt-1" style="font-size:.8rem;">{{ form.quantidade_execucoes.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">Quantas vezes este servico foi executado agora?</div>
+                    </div>
+
+                    <!-- Resumo dinamico -->
+                    <div style="background:#f8faff;border-radius:12px;padding:1rem;margin-bottom:1.5rem;border:1px solid #e8edf5;">
+                        <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#94a3b8;margin-bottom:.6rem;">
+                            Resumo da execucao
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:.85rem;color:#374151;">Servico</span>
+                            <span style="font-weight:700;font-size:.85rem;">{{ servico.nome }}</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem;">
+                            <span style="font-size:.85rem;color:#374151;">Preco unitario</span>
+                            <span style="font-weight:700;color:#10b981;">{{ servico.preco|floatformat:2 }} MZN</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.4rem;">
+                            <span style="font-size:.85rem;color:#374151;">Tempo estimado</span>
+                            <span style="font-weight:700;color:#3b82f6;">{{ servico.tempo_display }}</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2" style="padding:.75rem;">
+                        <i class="bi bi-play-fill"></i>
+                        <span>Confirmar Execucao</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

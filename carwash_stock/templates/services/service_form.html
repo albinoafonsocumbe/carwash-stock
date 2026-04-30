@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'services:list' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+
+    <!-- Formulario principal -->
+    <div class="col-lg-8">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <!-- Informacoes basicas -->
+            <div class="card mb-3" style="border-radius:16px;">
+                <div class="card-header d-flex align-items-center gap-2" style="border-radius:16px 16px 0 0;">
+                    <div style="width:32px;height:32px;background:#eef2ff;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-info-circle" style="color:#4f46e5;"></i>
+                    </div>
+                    <strong>Informacoes do Servico</strong>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.nome.label }} <span class="text-danger">*</span></label>
+                        {{ form.nome }}
+                        {% if form.nome.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.nome.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.descricao.label }}</label>
+                        {{ form.descricao }}
+                        {% if form.descricao.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.descricao.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">{{ form.preco.label }} <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text" style="background:#f8fafc;border-color:#e2e8f0;font-size:.85rem;font-weight:600;">MZN</span>
+                                {{ form.preco }}
+                            </div>
+                            {% if form.preco.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.preco.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">{{ form.tempo_estimado.label }} <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                {{ form.tempo_estimado }}
+                                <span class="input-group-text" style="background:#f8fafc;border-color:#e2e8f0;font-size:.85rem;">min</span>
+                            </div>
+                            {% if form.tempo_estimado.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.tempo_estimado.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Foto -->
+            <div class="card mb-3" style="border-radius:16px;">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <div style="width:32px;height:32px;background:#fef3c7;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-image" style="color:#d97706;"></i>
+                    </div>
+                    <strong>Foto do Servico</strong>
+                </div>
+                <div class="card-body">
+                    {% if form.instance.foto %}
+                    <div style="margin-bottom:1rem;">
+                        <img src="{{ form.instance.foto.url }}" alt="Foto atual"
+                             style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;border:2px solid #e2e8f0;">
+                        <div style="font-size:.78rem;color:#64748b;margin-top:.4rem;">Foto atual — carregue uma nova para substituir</div>
+                    </div>
+                    {% endif %}
+                    {{ form.foto }}
+                    <div class="form-text">Formatos aceites: JPG, PNG, WEBP. Tamanho maximo: 5MB</div>
+                    {% if form.foto.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ form.foto.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+
+            <!-- Produtos consumidos -->
+            <div class="card mb-3" style="border-radius:16px;">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <div style="width:32px;height:32px;background:#ecfdf5;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                        <i class="bi bi-box-seam" style="color:#10b981;"></i>
+                    </div>
+                    <strong>Produtos Consumidos por Execucao</strong>
+                </div>
+                <div class="card-body">
+                    {{ formset.management_form }}
+                    <div id="formset-container">
+                        {% for f in formset %}
+                        <div class="formset-row mb-3 p-3" style="background:#f8faff;border-radius:12px;border:1px solid #e8edf5;">
+                            {{ f.id }}
+                            <div class="row g-2 align-items-end">
+                                <div class="col-sm-6">
+                                    <label class="form-label" style="font-size:.78rem;">Produto</label>
+                                    {{ f.produto }}
+                                    {% if f.produto.errors %}<div class="text-danger" style="font-size:.75rem;">{{ f.produto.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="form-label" style="font-size:.78rem;">Quantidade</label>
+                                    {{ f.quantidade_usada }}
+                                    {% if f.quantidade_usada.errors %}<div class="text-danger" style="font-size:.75rem;">{{ f.quantidade_usada.errors.0 }}</div>{% endif %}
+                                </div>
+                                <div class="col-sm-2">
+                                    {% if f.DELETE %}
+                                    <div class="form-check mt-1">
+                                        {{ f.DELETE }}
+                                        <label class="form-check-label" style="font-size:.75rem;color:#ef4444;">Remover</label>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div style="font-size:.8rem;color:#64748b;margin-top:.5rem;">
+                        <i class="bi bi-info-circle me-1"></i>Defina os produtos e quantidades gastas em cada execucao deste servico
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado -->
+            <div class="card mb-4" style="border-radius:16px;">
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        {{ form.ativo }}
+                        <label class="form-check-label ms-2" style="font-weight:600;">Servico Ativo</label>
+                    </div>
+                    <div style="font-size:.78rem;color:#64748b;margin-top:.3rem;">Servicos inativos nao aparecem para execucao</div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary d-flex align-items-center gap-1">
+                    <i class="bi bi-check-lg"></i> {{ btn_label }}
+                </button>
+                <a href="{% url 'services:list' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Dicas laterais -->
+    <div class="col-lg-4">
+        <div class="card" style="border-radius:16px;background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1.5px solid #bbf7d0;position:sticky;top:80px;">
+            <div class="card-body">
+                <div style="font-weight:700;color:#065f46;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
+                    <i class="bi bi-lightbulb-fill" style="color:#10b981;"></i> Dicas
+                </div>
+                <ul style="font-size:.83rem;color:#374151;padding-left:1.2rem;margin:0;line-height:1.8;">
+                    <li>O <strong>preco</strong> e definido pelo administrador</li>
+                    <li>O <strong>tempo estimado</strong> ajuda a planear o dia</li>
+                    <li>A <strong>foto</strong> aparece no cartao do servico</li>
+                    <li>Os <strong>produtos</strong> sao descontados do stock ao executar</li>
+                    <li>Servicos <strong>inativos</strong> nao aparecem para execucao</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

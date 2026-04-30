@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}Servicos de Lavagem{% endblock %}
+{% block page_title %}Servicos de Lavagem{% endblock %}
+
+{% block topbar_actions %}
+{% if user.is_admin %}
+<a href="{% url 'services:create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+    <i class="bi bi-plus-lg"></i> Novo Servico
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<!-- Cabecalho -->
+<div style="margin-bottom:1.5rem;">
+    <div style="font-size:1rem;font-weight:700;color:#0f172a;">Servicos de Lavagem</div>
+    <div style="color:#64748b;font-size:.82rem;margin-top:.15rem;">{{ servicos|length }} servico{{ servicos|length|pluralize:"s" }} configurado{{ servicos|length|pluralize:"s" }}</div>
+</div>
+
+{% if servicos %}
+<div class="row g-4">
+    {% for servico in servicos %}
+    <div class="col-md-6 col-xl-4">
+        <div class="card h-100" style="border-radius:18px;overflow:hidden;transition:transform .2s,box-shadow .2s;border:1px solid #e2e8f0;">
+
+                <!-- Foto do servico -->
+                <div style="position:relative;height:160px;overflow:hidden;background:#f1f5f9;border-bottom:1px solid #e2e8f0;">
+                {% if servico.foto %}
+                <img src="{{ servico.foto.url }}" alt="{{ servico.nome }}"
+                     style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;">
+                    <i class="bi bi-car-front" style="font-size:2.5rem;color:#cbd5e1;"></i>
+                    <div style="color:#cbd5e1;font-size:.72rem;">Sem foto</div>
+                </div>
+                {% endif %}
+                <!-- Badge ativo/inativo -->
+                <div style="position:absolute;top:.75rem;left:.75rem;">
+                    {% if servico.ativo %}
+                    <span style="background:#10b981;color:#fff;font-size:.68rem;font-weight:700;padding:.3em .75em;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;">
+                        <i class="bi bi-check-circle-fill me-1"></i>Ativo
+                    </span>
+                    {% else %}
+                    <span style="background:#64748b;color:#fff;font-size:.68rem;font-weight:700;padding:.3em .75em;border-radius:20px;text-transform:uppercase;letter-spacing:.05em;">
+                        Inativo
+                    </span>
+                    {% endif %}
+                </div>
+                <!-- Preco badge -->
+                <div style="position:absolute;top:.75rem;right:.75rem;">
+                    <span style="background:rgba(0,0,0,.55);backdrop-filter:blur(6px);color:#fff;font-size:.85rem;font-weight:800;padding:.35em .85em;border-radius:20px;">
+                        {{ servico.preco|floatformat:0 }} MZN
+                    </span>
+                </div>
+            </div>
+
+            <div class="card-body" style="padding:1.25rem;">
+                <h5 style="font-weight:800;font-size:1rem;margin:0 0 .4rem;color:#0f172a;">{{ servico.nome }}</h5>
+
+                {% if servico.descricao %}
+                <p style="font-size:.82rem;color:#64748b;margin:0 0 1rem;line-height:1.5;">{{ servico.descricao }}</p>
+                {% endif %}
+
+                <!-- Tempo e preco -->
+                <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+                    <div style="display:flex;align-items:center;gap:.4rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.35rem .75rem;">
+                        <i class="bi bi-cash-coin" style="color:#10b981;font-size:.85rem;"></i>
+                        <span style="font-size:.8rem;font-weight:700;color:#065f46;">{{ servico.preco|floatformat:2 }} MZN</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:.4rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:.35rem .75rem;">
+                        <i class="bi bi-clock" style="color:#3b82f6;font-size:.85rem;"></i>
+                        <span style="font-size:.8rem;font-weight:700;color:#1d4ed8;">{{ servico.tempo_display }}</span>
+                    </div>
+                </div>
+
+                <!-- Produtos consumidos -->
+                {% if servico.produtos.all %}
+                <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:.5rem;">
+                    Produtos por execucao
+                </div>
+                <div style="background:#f8faff;border-radius:10px;overflow:hidden;border:1px solid #e8edf5;">
+                    {% for sp in servico.produtos.all %}
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .85rem;{% if not forloop.last %}border-bottom:1px solid #e8edf5;{% endif %}">
+                        <span style="font-size:.8rem;color:#374151;font-weight:500;">{{ sp.produto.nome }}</span>
+                        <span style="background:#eef2ff;color:#4f46e5;padding:.2em .6em;border-radius:6px;font-size:.72rem;font-weight:700;">
+                            {{ sp.quantidade_usada }} {{ sp.produto.unidade }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="background:#f8faff;border-radius:10px;padding:.75rem;text-align:center;border:1px dashed #c7d2fe;">
+                    <span style="font-size:.8rem;color:#94a3b8;">Sem produtos associados</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-footer" style="background:#fff;border-top:1px solid #f1f5f9;padding:.85rem 1.25rem;">
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="{% url 'services:execute' servico.pk %}"
+                       class="btn btn-success btn-sm d-flex align-items-center gap-1 flex-grow-1 justify-content-center">
+                        <i class="bi bi-play-fill"></i> Executar Servico
+                    </a>
+                    {% if user.is_admin %}
+                    <a href="{% url 'services:update' servico.pk %}"
+                       class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1"
+                       title="Editar">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{% url 'services:delete' servico.pk %}"
+                       class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1"
+                       title="Eliminar">
+                        <i class="bi bi-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+    <div style="background:#fff;border-radius:12px;border:1px solid #e2e8f0;padding:3rem;text-align:center;color:#94a3b8;">
+        <i class="bi bi-list-check d-block mb-2" style="font-size:2rem;opacity:.4;"></i>
+        <div style="font-weight:600;font-size:.9rem;color:#475569;margin-bottom:.35rem;">Nenhum servico configurado</div>
+        <div style="font-size:.82rem;margin-bottom:1.25rem;">Crie o primeiro servico para comecar a registar lavagens</div>
+        {% if user.is_admin %}
+        <a href="{% url 'services:create' %}" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1"></i> Criar servico
+        </a>
+        {% endif %}
+    </div>
+{% endif %}
+
+<style>
+.card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,.1) !important; }
+</style>
+{% endblock %}

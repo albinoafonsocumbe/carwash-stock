@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Relatório de Produtos{% endblock %}
+{% block page_title %}Relatório de Produtos{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'reports:export_products_pdf' %}" class="btn btn-sm btn-danger d-flex align-items-center gap-1">
+    <i class="bi bi-file-earmark-pdf"></i> PDF
+</a>
+<a href="{% url 'reports:export_products_csv' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-download"></i> CSV
+</a>
+<a href="{% url 'reports:index' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+    <i class="bi bi-arrow-left"></i> Voltar
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Unidade</th>
+                    <th class="text-end">Stock Atual</th>
+                    <th class="text-end">Total Entradas</th>
+                    <th class="text-end">Total Saídas</th>
+                    <th class="text-center">Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    <td>{{ row.produto.nome }}</td>
+                    <td class="text-muted">{{ row.produto.unidade }}</td>
+                    <td class="text-end {% if row.produto.tem_alerta %}text-danger fw-bold{% endif %}">{{ row.stock_atual }}</td>
+                    <td class="text-end text-success">{{ row.entradas }}</td>
+                    <td class="text-end text-danger">{{ row.saidas }}</td>
+                    <td class="text-center">
+                        {% if row.produto.tem_alerta %}
+                        <span class="badge-status" style="background:#fff7ed;color:#b45309;">Alerta</span>
+                        {% else %}
+                        <span class="badge-status" style="background:#f0fdf4;color:#15803d;">Normal</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">Sem dados</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

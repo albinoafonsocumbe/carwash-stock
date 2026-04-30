@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Categorias{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h4 mb-0">Categorias de Produtos</h2>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Categoria</th>
+                    <th>Código</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for codigo, nome in categorias %}
+                <tr>
+                    <td>{{ nome }}</td>
+                    <td><code>{{ codigo }}</code></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="text-center text-muted py-4">Nenhuma categoria definida.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'products:list' %}" class="btn btn-outline-secondary btn-sm">
+        ← Voltar aos Produtos
+    </a>
+</div>
+{% endblock %}

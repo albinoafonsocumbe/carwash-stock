@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Utilizadores{% endblock %}
+{% block page_title %}Gestao de Utilizadores{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'accounts:user_create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+    <i class="bi bi-person-plus"></i> Novo Utilizador
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- Hero banner -->
+<div style="background:linear-gradient(135deg,#0f172a,#1e293b,#334155);border-radius:16px;padding:1.75rem;margin-bottom:1.5rem;position:relative;overflow:hidden;">
+    <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04);"></div>
+    <div style="position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+            <div style="font-size:1.8rem;margin-bottom:.4rem;">👥</div>
+            <h2 style="color:#fff;font-size:1.3rem;font-weight:800;margin:0;">Gestao de Utilizadores</h2>
+            <p style="color:#94a3b8;margin:.3rem 0 0;font-size:.82rem;">Gerencie os acessos e permissoes da equipa</p>
+        </div>
+        <div style="display:flex;gap:.75rem;">
+            <div style="background:rgba(255,255,255,.08);border-radius:10px;padding:.6rem 1rem;text-align:center;">
+                <div style="color:#fff;font-size:1.4rem;font-weight:800;">{{ utilizadores|length }}</div>
+                <div style="color:#94a3b8;font-size:.72rem;">Total</div>
+            </div>
+            <div style="background:rgba(79,70,229,.25);border-radius:10px;padding:.6rem 1rem;text-align:center;">
+                <div style="color:#a5b4fc;font-size:1.4rem;font-weight:800;">
+                    {% for u in utilizadores %}{% if u.perfil == 'admin' %}{{ forloop.counter }}{% endif %}{% endfor %}
+                </div>
+                <div style="color:#94a3b8;font-size:.72rem;">Admins</div>
+            </div>
+            <div style="background:rgba(16,185,129,.2);border-radius:10px;padding:.6rem 1rem;text-align:center;">
+                <div style="color:#6ee7b7;font-size:1.4rem;font-weight:800;">
+                    {% for u in utilizadores %}{% if u.is_active %}{{ forloop.counter }}{% endif %}{% endfor %}
+                </div>
+                <div style="color:#94a3b8;font-size:.72rem;">Ativos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela -->
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Utilizador</th>
+                    <th>Nome Completo</th>
+                    <th>Email</th>
+                    <th class="text-center">Perfil</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-center">Acoes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in utilizadores %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#818cf8);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;flex-shrink:0;">
+                                {{ u.username|first|upper }}
+                            </div>
+                            <span class="fw-600">{{ u.username }}</span>
+                            {% if u == request.user %}
+                            <span class="badge-pill badge-primary" style="font-size:.65rem;">Voce</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td style="color:#64748b;">{{ u.get_full_name|default:"—" }}</td>
+                    <td style="font-size:.83rem;color:#64748b;">{{ u.email|default:"—" }}</td>
+                    <td class="text-center">
+                        {% if u.perfil == 'admin' %}
+                        <span class="badge-pill badge-primary"><i class="bi bi-shield-check me-1"></i>Admin</span>
+                        {% else %}
+                        <span class="badge-pill badge-neutral"><i class="bi bi-person me-1"></i>Funcionario</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if u.is_active %}
+                        <span class="badge-pill badge-success"><i class="bi bi-circle-fill me-1" style="font-size:.5rem;"></i>Ativo</span>
+                        {% else %}
+                        <span class="badge-pill badge-danger"><i class="bi bi-circle me-1" style="font-size:.5rem;"></i>Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <a href="{% url 'accounts:user_update' u.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% if u != request.user %}
+                        <form method="post" action="{% url 'accounts:user_toggle' u.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm {% if u.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} py-0 px-2 ms-1"
+                                    title="{% if u.is_active %}Desativar{% else %}Ativar{% endif %}">
+                                <i class="bi bi-{% if u.is_active %}pause-circle{% else %}play-circle{% endif %}"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5" style="color:#94a3b8;">
+                        <i class="bi bi-people d-block mb-2" style="font-size:2rem;opacity:.3;"></i>
+                        Nenhum utilizador encontrado
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

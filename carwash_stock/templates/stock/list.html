@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block title %}Movimentacoes{% endblock %}
+{% block page_title %}Movimentacoes de Stock{% endblock %}
+
+{% block topbar_actions %}
+{% if user.is_admin %}
+<a href="{% url 'stock:entry_create' %}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+    <i class="bi bi-box-arrow-in-down"></i> Entrada
+</a>
+{% endif %}
+<a href="{% url 'stock:exit_create' %}" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
+    <i class="bi bi-box-arrow-up"></i> Saida
+</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table mb-0">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Produto</th>
+                    {% if user.is_admin %}<th class="text-center">Tipo</th>{% endif %}
+                    <th class="text-end">Quantidade</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentos %}
+                {% if user.is_admin or mov.tipo == 'saida' %}
+                <tr>
+                    <td style="color:#64748b;">{{ mov.data|date:"d/m/Y H:i" }}</td>
+                    <td style="font-weight:500;">{{ mov.produto.nome }}</td>
+                    {% if user.is_admin %}
+                    <td class="text-center">
+                        {% if mov.tipo == 'entrada' %}
+                        <span class="badge-status bs-success">
+                            <i class="bi bi-arrow-down-circle"></i> Entrada
+                        </span>
+                        {% else %}
+                        <span class="badge-status bs-warning">
+                            <i class="bi bi-arrow-up-circle"></i> Saida
+                        </span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                    <td class="text-end" style="font-weight:600;">
+                        {{ mov.quantidade }}
+                        <span style="color:#94a3b8;font-size:.72rem;font-weight:400;">{{ mov.produto.unidade }}</span>
+                    </td>
+                </tr>
+                {% endif %}
+                {% empty %}
+                <tr>
+                    <td colspan="{% if user.is_admin %}4{% else %}3{% endif %}" class="text-center py-5" style="color:#cbd5e1;">
+                        <i class="bi bi-arrow-left-right d-block mb-2" style="font-size:1.8rem;"></i>
+                        Nenhuma movimentacao registada
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if is_paginated %}
+<nav class="mt-3 d-flex justify-content-center">
+    <ul class="pagination pagination-sm">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&#8249;</a></li>
+        {% endif %}
+        <li class="page-item disabled">
+            <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        </li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&#8250;</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}

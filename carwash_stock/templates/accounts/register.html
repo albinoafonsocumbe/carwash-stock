@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta — CarWash Stock</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif; margin: 0;
+            min-height: 100vh; display: flex;
+            background: #f1f5f9; color: #0f172a;
+        }
+
+        /* Left panel — identico ao login */
+        .panel-left {
+            width: 420px; flex-shrink: 0;
+            background: #0f172a;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 2.5rem;
+        }
+        .panel-left .logo {
+            display: flex; align-items: center; gap: .75rem;
+        }
+        .logo-icon {
+            width: 40px; height: 40px; border-radius: 10px;
+            background: #2563eb;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-icon i { color: #fff; font-size: 1.1rem; }
+        .logo-name { color: #fff; font-weight: 700; font-size: 1rem; }
+        .logo-sub { color: rgba(255,255,255,.3); font-size: .65rem; }
+
+        .panel-left .headline {
+            flex: 1; display: flex; flex-direction: column; justify-content: center;
+            padding: 2rem 0;
+        }
+        .headline h1 {
+            color: #fff; font-size: 1.75rem; font-weight: 800;
+            line-height: 1.25; margin: 0 0 .75rem;
+        }
+        .headline p { color: #64748b; font-size: .875rem; line-height: 1.7; margin: 0 0 2rem; }
+
+        .steps-list { list-style: none; padding: 0; margin: 0; }
+        .steps-list li {
+            display: flex; align-items: center; gap: .75rem;
+            color: #94a3b8; font-size: .82rem; padding: .5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,.05);
+        }
+        .steps-list li:last-child { border-bottom: none; }
+        .step-num {
+            width: 24px; height: 24px; border-radius: 50%;
+            background: #2563eb; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .7rem; font-weight: 700; flex-shrink: 0;
+        }
+
+        .panel-left .footer-note {
+            color: rgba(255,255,255,.15); font-size: .68rem; text-align: center;
+        }
+
+        /* Right panel */
+        .panel-right {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 2rem; overflow-y: auto;
+        }
+        .register-box { width: 100%; max-width: 400px; padding: 1rem 0; }
+
+        .register-box h2 { font-size: 1.5rem; font-weight: 800; margin: 0 0 .35rem; }
+        .register-box .sub { color: #64748b; font-size: .85rem; margin: 0 0 1.75rem; }
+
+        .field { margin-bottom: 1rem; }
+        .field label { display: block; font-weight: 600; font-size: .78rem; color: #374151; margin-bottom: .4rem; }
+        .input-wrap { position: relative; }
+        .input-wrap i {
+            position: absolute; left: .85rem; top: 50%; transform: translateY(-50%);
+            color: #94a3b8; font-size: .95rem; pointer-events: none;
+        }
+        .input-wrap input {
+            width: 100%; padding: .65rem .85rem .65rem 2.4rem;
+            border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: .875rem; font-family: 'Inter', sans-serif;
+            background: #fff; outline: none; transition: border-color .15s, box-shadow .15s;
+            color: #0f172a;
+        }
+        .input-wrap input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+        }
+        .field-error { color: #dc2626; font-size: .73rem; margin-top: .25rem; }
+
+        .field-row { display: flex; gap: .75rem; }
+        .field-row .field { flex: 1; }
+
+        .btn-submit {
+            width: 100%; padding: .7rem; border: none; border-radius: 8px;
+            background: #2563eb; color: #fff;
+            font-weight: 700; font-size: .875rem; font-family: 'Inter', sans-serif;
+            cursor: pointer; transition: background .15s, transform .1s;
+            display: flex; align-items: center; justify-content: center; gap: .5rem;
+            margin-top: .25rem;
+        }
+        .btn-submit:hover { background: #1d4ed8; transform: translateY(-1px); }
+
+        .alert-box {
+            border-radius: 8px; padding: .7rem .9rem; font-size: .8rem;
+            display: flex; align-items: flex-start; gap: .5rem; margin-bottom: 1.1rem;
+        }
+        .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+        .divider { height: 1px; background: #e2e8f0; margin: 1.25rem 0; }
+
+        .login-link {
+            text-align: center; font-size: .82rem; color: #64748b;
+        }
+        .login-link a { color: #2563eb; font-weight: 600; text-decoration: none; }
+        .login-link a:hover { text-decoration: underline; }
+
+        @media (max-width: 700px) {
+            .panel-left { display: none; }
+            .field-row { flex-direction: column; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="panel-left">
+    <div class="logo">
+        <div class="logo-icon"><i class="bi bi-droplet-fill"></i></div>
+        <div>
+            <div class="logo-name">CarWash Stock</div>
+            <div class="logo-sub">Sistema de Gestao</div>
+        </div>
+    </div>
+
+    <div class="headline">
+        <h1>Crie a sua conta agora</h1>
+        <p>Preencha os dados abaixo para ter acesso ao sistema de gestao do carwash.</p>
+        <ul class="steps-list">
+            <li><div class="step-num">1</div> Preencha os seus dados pessoais</li>
+            <li><div class="step-num">2</div> Defina um email e palavra-passe</li>
+            <li><div class="step-num">3</div> Aceda ao sistema de imediato</li>
+        </ul>
+    </div>
+
+    <div class="footer-note">CarWash Stock &copy; 2026</div>
+</div>
+
+<div class="panel-right">
+    <div class="register-box">
+        <h2>Criar conta</h2>
+        <p class="sub">Preencha os campos para criar a sua conta</p>
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert-box alert-error">
+            <i class="bi bi-exclamation-circle" style="flex-shrink:0;margin-top:.1rem;"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <form method="post" novalidate autocomplete="off">
+            {% csrf_token %}
+
+            <div class="field-row">
+                <div class="field">
+                    <label>Nome <span style="color:#dc2626;">*</span></label>
+                    <div class="input-wrap">
+                        <i class="bi bi-person"></i>
+                        <input type="text" name="first_name" placeholder="Nome" required autocomplete="off">
+                    </div>
+                    {% if form.first_name.errors %}<div class="field-error">{{ form.first_name.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="field">
+                    <label>Apelido</label>
+                    <div class="input-wrap">
+                        <i class="bi bi-person"></i>
+                        <input type="text" name="last_name" placeholder="Apelido" autocomplete="off">
+                    </div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Email <span style="color:#dc2626;">*</span></label>
+                <div class="input-wrap">
+                    <i class="bi bi-envelope"></i>
+                    <input type="email" name="email" placeholder="o.seu@email.com" required autocomplete="off">
+                </div>
+                {% if form.email.errors %}<div class="field-error">{{ form.email.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="field">
+                <label>Nome de utilizador <span style="color:#dc2626;">*</span></label>
+                <div class="input-wrap">
+                    <i class="bi bi-at"></i>
+                    <input type="text" name="username" placeholder="nome.utilizador" required autocomplete="off">
+                </div>
+                {% if form.username.errors %}<div class="field-error">{{ form.username.errors.0 }}</div>{% endif %}
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label>Palavra-passe <span style="color:#dc2626;">*</span></label>
+                    <div class="input-wrap">
+                        <i class="bi bi-lock"></i>
+                        <input type="password" name="password" placeholder="min. 8 caracteres" required autocomplete="new-password">
+                    </div>
+                    {% if form.password.errors %}<div class="field-error">{{ form.password.errors.0 }}</div>{% endif %}
+                </div>
+                <div class="field">
+                    <label>Confirmar <span style="color:#dc2626;">*</span></label>
+                    <div class="input-wrap">
+                        <i class="bi bi-lock-fill"></i>
+                        <input type="password" name="password_confirm" placeholder="Repetir" required autocomplete="new-password">
+                    </div>
+                    {% if form.password_confirm.errors %}<div class="field-error">{{ form.password_confirm.errors.0 }}</div>{% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Criar conta <i class="bi bi-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="divider"></div>
+        <div class="login-link">
+            Ja tem conta? <a href="{% url 'accounts:login' %}">Entrar</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
