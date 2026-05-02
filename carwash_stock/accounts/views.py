@@ -128,11 +128,13 @@ class LoginView(View):
 
 class LogoutView(View):
     def post(self, request):
+        # Limpar elevacao de perfil antes de fazer logout
+        request.session.pop('perfil_elevado', None)
         logout(request)
-        messages.success(request, 'Sessao terminada com sucesso.')
         return redirect('accounts:login')
 
     def get(self, request):
+        request.session.pop('perfil_elevado', None)
         logout(request)
         return redirect('accounts:login')
 

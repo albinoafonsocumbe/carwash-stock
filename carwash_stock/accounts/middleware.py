@@ -11,4 +11,8 @@ class PerfilElevadoMiddleware:
             elevado = request.session.get('perfil_elevado')
             if elevado:
                 request.user._perfil_elevado = elevado
+            else:
+                # Garantir que nao ha elevacao residual
+                if hasattr(request.user, '_perfil_elevado'):
+                    del request.user._perfil_elevado
         return self.get_response(request)
