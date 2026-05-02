@@ -2,28 +2,63 @@
 {% block title %}Dashboard{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+/* ── Mobile bottom nav ── */
+.mobile-actions {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #fff; border-top: 1px solid #e2e8f0;
+    padding: .6rem 1rem; z-index: 150;
+    gap: .5rem;
+}
+.mobile-action-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: .2rem; padding: .4rem .3rem; border-radius: 10px;
+    text-decoration: none; font-size: .62rem; font-weight: 600;
+    color: #64748b; transition: background .15s, color .15s;
+    border: none; background: none; cursor: pointer;
+}
+.mobile-action-btn i { font-size: 1.2rem; }
+.mobile-action-btn.primary { color: #2563eb; background: #eff6ff; }
+.mobile-action-btn.success { color: #16a34a; background: #f0fdf4; }
+.mobile-action-btn.danger  { color: #dc2626; background: #fef2f2; }
+.mobile-action-btn.gray    { color: #475569; background: #f1f5f9; }
+
+@media (max-width: 768px) {
+    .mobile-actions { display: flex; }
+    .desktop-actions { display: none !important; }
+    .page-body { padding-bottom: 5rem !important; }
+    .stat-value { font-size: 1.6rem !important; }
+    .dash-table th, .dash-table td { padding: .6rem .75rem !important; font-size: .78rem !important; }
+}
+</style>
+{% endblock %}
+
 {% block topbar_actions %}
-<a href="{% url 'lavagens:create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
-    <i class="bi bi-plus-lg"></i> Nova Lavagem
-</a>
-{% if user.is_admin %}
-<a href="{% url 'stock:entry_create' %}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
-    <i class="bi bi-box-arrow-in-down"></i> Entrada de Stock
-</a>
-{% endif %}
+<div class="desktop-actions d-flex gap-2">
+    <a href="{% url 'lavagens:create' %}" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+        <i class="bi bi-plus-lg"></i> Nova Lavagem
+    </a>
+    {% if user.is_admin %}
+    <a href="{% url 'stock:entry_create' %}" class="btn btn-success btn-sm d-flex align-items-center gap-1">
+        <i class="bi bi-box-arrow-in-down"></i> Entrada Stock
+    </a>
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block content %}
 
-<!-- Cabecalho da pagina -->
-<div style="margin-bottom:1.5rem;">
-    <div style="font-size:1rem;font-weight:700;color:#0f172a;">{{ user.get_full_name|default:user.username }}</div>
-    <div style="color:#64748b;font-size:.82rem;margin-top:.15rem;">Resumo do dia — {{ user.get_perfil_display }}</div>
+<!-- Cabecalho -->
+<div style="margin-bottom:1.25rem;">
+    <div style="font-size:.95rem;font-weight:700;color:#0f172a;">{{ user.get_full_name|default:user.username }}</div>
+    <div style="color:#64748b;font-size:.78rem;margin-top:.1rem;">Resumo do dia — {{ user.get_perfil_display }}</div>
 </div>
 
-<!-- Linha 1 de estatisticas -->
-<div class="row g-3 mb-3">
-    <div class="col-6 col-xl-3">
+<!-- Stats linha 1 -->
+<div class="row g-2 mb-2">
+    <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="d-flex align-items-start justify-content-between">
                 <div>
@@ -36,12 +71,13 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="d-flex align-items-start justify-content-between">
                 <div>
-                    <div class="stat-label">Receita Hoje (MZN)</div>
-                    <div class="stat-value" style="color:#16a34a;">{{ receita_hoje|floatformat:0 }}</div>
+                    <div class="stat-label">Receita Hoje</div>
+                    <div class="stat-value" style="color:#16a34a;font-size:1.5rem;">{{ receita_hoje|floatformat:0 }}</div>
+                    <div style="font-size:.65rem;color:#94a3b8;">MZN</div>
                 </div>
                 <div class="stat-icon" style="background:#f0fdf4;">
                     <i class="bi bi-cash-coin" style="color:#16a34a;"></i>
@@ -49,11 +85,11 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="d-flex align-items-start justify-content-between">
                 <div>
-                    <div class="stat-label">Produtos em Stock</div>
+                    <div class="stat-label">Produtos</div>
                     <div class="stat-value" style="color:#0f172a;">{{ total_produtos }}</div>
                 </div>
                 <div class="stat-icon" style="background:#f1f5f9;">
@@ -62,11 +98,11 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="d-flex align-items-start justify-content-between">
                 <div>
-                    <div class="stat-label">Alertas de Stock</div>
+                    <div class="stat-label">Alertas</div>
                     <div class="stat-value" style="color:{% if produtos_alerta %}#d97706{% else %}#16a34a{% endif %};">
                         {{ produtos_alerta|length }}
                     </div>
@@ -80,16 +116,16 @@
     </div>
 </div>
 
-<!-- Linha 2 de estatisticas -->
-<div class="row g-3 mb-4">
-    <div class="col-6 col-xl-3">
+<!-- Stats linha 2 -->
+<div class="row g-2 mb-3">
+    <div class="col-6 col-lg-3">
         <div class="stat-card" style="background:#0f172a;border-color:#0f172a;">
             <div class="stat-label" style="color:#64748b;">Receita Total</div>
-            <div class="stat-value" style="color:#fff;font-size:1.6rem;">{{ receita_total|floatformat:0 }}</div>
-            <div style="color:#475569;font-size:.72rem;margin-top:.3rem;">{{ total_lavagens }} lavagens registadas</div>
+            <div class="stat-value" style="color:#fff;font-size:1.4rem;">{{ receita_total|floatformat:0 }}</div>
+            <div style="color:#475569;font-size:.65rem;margin-top:.2rem;">{{ total_lavagens }} lavagens</div>
         </div>
     </div>
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="d-flex align-items-start justify-content-between">
                 <div>
@@ -102,7 +138,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="d-flex align-items-start justify-content-between">
                 <div>
@@ -115,7 +151,7 @@
             </div>
         </div>
     </div>
-    <div class="col-6 col-xl-3">
+    <div class="col-6 col-lg-3">
         <div class="stat-card">
             <div class="d-flex align-items-start justify-content-between">
                 <div>
@@ -145,20 +181,20 @@
             </div>
             <div class="card-body p-0">
                 {% for p in produtos_alerta %}
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:.7rem 1.25rem;{% if not forloop.last %}border-bottom:1px solid #f1f5f9;{% endif %}">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.1rem;{% if not forloop.last %}border-bottom:1px solid #f1f5f9;{% endif %}">
                     <div>
-                        <div style="font-weight:600;font-size:.83rem;">{{ p.nome }}</div>
-                        <div style="font-size:.72rem;color:#94a3b8;">Min: {{ p.nivel_minimo }} {{ p.unidade }}</div>
+                        <div style="font-weight:600;font-size:.82rem;">{{ p.nome }}</div>
+                        <div style="font-size:.7rem;color:#94a3b8;">Min: {{ p.nivel_minimo }} {{ p.unidade }}</div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-weight:700;color:#dc2626;font-size:.88rem;">{{ p.quantidade }}</div>
-                        <div style="font-size:.7rem;color:#94a3b8;">{{ p.unidade }}</div>
+                        <div style="font-weight:700;color:#dc2626;font-size:.85rem;">{{ p.quantidade }}</div>
+                        <div style="font-size:.68rem;color:#94a3b8;">{{ p.unidade }}</div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
             <div class="card-footer">
-                <a href="{% url 'products:list' %}" class="btn btn-sm btn-outline-warning w-100">Ver todos os produtos</a>
+                <a href="{% url 'products:list' %}" class="btn btn-sm btn-outline-warning w-100">Ver produtos</a>
             </div>
         </div>
     </div>
@@ -174,13 +210,13 @@
                 </span>
                 <a href="{% url 'lavagens:list' %}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
             </div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
+            <div class="table-responsive">
+                <table class="table mb-0 dash-table">
                     <thead>
                         <tr>
                             <th>Matricula</th>
                             <th>Servico</th>
-                            <th class="text-end">Valor (MZN)</th>
+                            <th class="text-end">MZN</th>
                             <th class="text-end">Hora</th>
                         </tr>
                     </thead>
@@ -188,11 +224,11 @@
                         {% for lav in ultimas_lavagens %}
                         <tr>
                             <td>
-                                <span style="background:#eff6ff;color:#1d4ed8;padding:.2em .55em;border-radius:5px;font-weight:700;font-size:.78rem;font-family:monospace;letter-spacing:.03em;">
+                                <span style="background:#eff6ff;color:#1d4ed8;padding:.15em .5em;border-radius:5px;font-weight:700;font-size:.75rem;font-family:monospace;">
                                     {{ lav.matricula }}
                                 </span>
                             </td>
-                            <td style="color:#374151;">
+                            <td style="color:#374151;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                                 {% if lav.tipo_lavagem %}{{ lav.tipo_lavagem.nome }}{% else %}<span style="color:#cbd5e1;">—</span>{% endif %}
                             </td>
                             <td class="text-end" style="font-weight:700;color:#16a34a;">{{ lav.valor_cobrado|floatformat:0 }}</td>
@@ -212,19 +248,18 @@
         </div>
     </div>
 
-    <!-- Ultimas movimentacoes -->
     {% if not produtos_alerta %}
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header d-flex align-items-center justify-content-between">
                 <span class="d-flex align-items-center gap-2">
                     <i class="bi bi-arrow-left-right" style="color:#475569;"></i>
-                    Movimentacoes de Stock
+                    Movimentacoes
                 </span>
                 <a href="{% url 'stock:list' %}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
             </div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
+            <div class="table-responsive">
+                <table class="table mb-0 dash-table">
                     <thead>
                         <tr>
                             <th>Produto</th>
@@ -236,7 +271,7 @@
                     <tbody>
                         {% for mov in ultimas_movimentacoes %}
                         <tr>
-                            <td style="font-weight:500;">{{ mov.produto.nome }}</td>
+                            <td style="font-weight:500;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ mov.produto.nome }}</td>
                             <td class="text-center">
                                 {% if mov.tipo == 'entrada' %}
                                 <span class="badge-status bs-success">Entrada</span>
@@ -244,14 +279,14 @@
                                 <span class="badge-status bs-warning">Saida</span>
                                 {% endif %}
                             </td>
-                            <td class="text-end">{{ mov.quantidade }} <span style="color:#94a3b8;font-size:.72rem;">{{ mov.produto.unidade }}</span></td>
+                            <td class="text-end">{{ mov.quantidade }} <span style="color:#94a3b8;font-size:.7rem;">{{ mov.produto.unidade }}</span></td>
                             <td class="text-end" style="color:#94a3b8;">{{ mov.data|date:"H:i" }}</td>
                         </tr>
                         {% empty %}
                         <tr>
                             <td colspan="4" class="text-center py-4" style="color:#cbd5e1;">
                                 <i class="bi bi-arrow-left-right d-block mb-1" style="font-size:1.4rem;"></i>
-                                Sem movimentacoes hoje
+                                Sem movimentacoes
                             </td>
                         </tr>
                         {% endfor %}
@@ -264,8 +299,8 @@
 
 </div>
 
-<!-- Acoes rapidas -->
-<div class="row g-3 mt-1">
+<!-- Acoes rapidas desktop -->
+<div class="row g-3 mt-1 desktop-actions">
     <div class="col-12">
         <div class="card">
             <div class="card-header">Acoes Rapidas</div>
@@ -285,9 +320,6 @@
                     <a href="{% url 'products:list' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
                         <i class="bi bi-box-seam"></i> Produtos
                     </a>
-                    <a href="{% url 'services:list' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
-                        <i class="bi bi-list-check"></i> Servicos
-                    </a>
                     {% if user.is_admin %}
                     <a href="{% url 'reports:index' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1">
                         <i class="bi bi-bar-chart"></i> Relatorios
@@ -297,6 +329,32 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Barra de acoes mobile (fixada no fundo) -->
+<div class="mobile-actions">
+    <a href="{% url 'lavagens:create' %}" class="mobile-action-btn primary">
+        <i class="bi bi-plus-circle-fill"></i>
+        <span>Lavagem</span>
+    </a>
+    <a href="{% url 'lavagens:list' %}" class="mobile-action-btn gray">
+        <i class="bi bi-car-front"></i>
+        <span>Historico</span>
+    </a>
+    <a href="{% url 'stock:exit_create' %}" class="mobile-action-btn danger">
+        <i class="bi bi-box-arrow-up"></i>
+        <span>Saida</span>
+    </a>
+    <a href="{% url 'products:list' %}" class="mobile-action-btn gray">
+        <i class="bi bi-box-seam"></i>
+        <span>Produtos</span>
+    </a>
+    {% if user.is_admin %}
+    <a href="{% url 'stock:entry_create' %}" class="mobile-action-btn success">
+        <i class="bi bi-box-arrow-in-down"></i>
+        <span>Entrada</span>
+    </a>
+    {% endif %}
 </div>
 
 {% endblock %}
