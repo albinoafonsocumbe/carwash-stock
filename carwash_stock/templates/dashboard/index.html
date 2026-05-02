@@ -56,14 +56,38 @@
     <div style="color:#64748b;font-size:.78rem;margin-top:.1rem;">
         Resumo do dia —
         {% if user.is_admin %}
-        <a href="{% url 'accounts:user_list' %}" style="color:#2563eb;font-weight:600;text-decoration:none;">
-            {{ user.get_perfil_display }}
-        </a>
+        <span id="adminLink" style="color:#2563eb;font-weight:600;cursor:pointer;border-bottom:1px dashed #2563eb;user-select:none;"
+              onclick="handleAdminClick()" title="Duplo clique para ir ao painel de admin">
+            {{ user.get_perfil_display }} <i class="bi bi-shield-lock" style="font-size:.65rem;"></i>
+        </span>
+        <span id="adminHint" style="display:none;margin-left:.4rem;font-size:.7rem;color:#2563eb;background:#eff6ff;padding:.15em .5em;border-radius:4px;">
+            Clique novamente para entrar
+        </span>
         {% else %}
         {{ user.get_perfil_display }}
         {% endif %}
     </div>
 </div>
+
+{% if user.is_admin %}
+<script>
+let adminClicks = 0;
+let adminTimer = null;
+function handleAdminClick() {
+    adminClicks++;
+    if (adminClicks === 1) {
+        document.getElementById('adminHint').style.display = 'inline';
+        adminTimer = setTimeout(() => {
+            adminClicks = 0;
+            document.getElementById('adminHint').style.display = 'none';
+        }, 2000);
+    } else if (adminClicks >= 2) {
+        clearTimeout(adminTimer);
+        window.location.href = "{% url 'accounts:user_list' %}";
+    }
+}
+</script>
+{% endif %}
 
 <!-- Stats linha 1 -->
 <div class="row g-2 mb-2">
