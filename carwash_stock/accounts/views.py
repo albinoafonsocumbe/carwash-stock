@@ -279,6 +279,40 @@ class UserToggleActiveView(AdminRequiredMixin, View):
         return redirect('accounts:user_list')
 
 
+# ─── Elevacao de perfil para admin ───────────────────────────────────────────
+
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+
+@login_required
+@require_POST
+def elevate_to_admin(request):
+    """Verifica a password de um admin e eleva o perfil da sessao actual."""
+    try:
+        data = json.loads(request.body)
+        password = data.get('password', '')
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Pedido invalido'}, status=400)
+
+    # Verificar se existe algum admin com esta password
+    admins = User.objects.filter(perfil='admin', is_active=True)
+    admin_found = None
+    for admin in admins:
+        if admin.check_password(password):
+            admin_found = admin
+            break
+
+    if not admin_found:
+        return JsonResponse({'ok': False, 'error': 'Password incorreta'})
+
+    # Elevar o perfil do utilizador actual para admin na sessao
+    request.user.perfil = 'admin'
+    request.user.save(update_fields=['perfil'])
+    return JsonResponse({'ok': True, 'redirect': '/accounts/utilizadores/'})
+
+
 # ─── Registo publico (sem campo de perfil) ────────────────────────────────────
 
 class RegisterForm(django_forms.ModelForm):

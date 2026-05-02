@@ -54,40 +54,75 @@
 <div style="margin-bottom:1.25rem;">
     <div style="font-size:.95rem;font-weight:700;color:#0f172a;">{{ user.get_full_name|default:user.username }}</div>
     <div style="color:#64748b;font-size:.78rem;margin-top:.1rem;">
-        Resumo do dia —
-        {% if user.is_admin %}
-        <span id="adminLink" style="color:#2563eb;font-weight:600;cursor:pointer;border-bottom:1px dashed #2563eb;user-select:none;"
-              onclick="handleAdminClick()" title="Duplo clique para ir ao painel de admin">
-            {{ user.get_perfil_display }} <i class="bi bi-shield-lock" style="font-size:.65rem;"></i>
+        Resumo do dia
+        <span id="dashSep"
+              style="cursor:pointer;padding:0 .2rem;border-radius:4px;transition:background .15s;"
+              onclick="openElevateModal()"
+              title="Clique para aceder como administrador">
+            —
         </span>
-        <span id="adminHint" style="display:none;margin-left:.4rem;font-size:.7rem;color:#2563eb;background:#eff6ff;padding:.15em .5em;border-radius:4px;">
-            Clique novamente para entrar
-        </span>
-        {% else %}
         {{ user.get_perfil_display }}
-        {% endif %}
     </div>
 </div>
 
-{% if user.is_admin %}
+<!-- Modal de elevacao para admin -->
+<div id="elevateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:1.75rem;width:100%;max-width:360px;margin:1rem;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+        <div style="font-weight:700;font-size:1rem;margin-bottom:.35rem;color:#0f172a;">Acesso de Administrador</div>
+        <div style="font-size:.82rem;color:#64748b;margin-bottom:1.25rem;">Introduza a password de administrador para continuar.</div>
+        <div style="margin-bottom:1rem;">
+            <label style="font-size:.78rem;font-weight:600;color:#374151;display:block;margin-bottom:.35rem;">Password</label>
+            <input type="password" id="elevatePassword" class="form-control"
+                   placeholder="••••••••" onkeydown="if(event.key==='Enter')submitElevate()">
+        </div>
+        <div id="elevateError" style="display:none;color:#dc2626;font-size:.78rem;margin-bottom:.75rem;padding:.5rem .75rem;background:#fef2f2;border-radius:8px;">
+            Password incorreta. Tente novamente.
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="submitElevate()" class="btn btn-primary flex-grow-1">
+                Entrar como Admin
+            </button>
+            <button onclick="closeElevateModal()" class="btn btn-outline-secondary">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-let adminClicks = 0;
-let adminTimer = null;
-function handleAdminClick() {
-    adminClicks++;
-    if (adminClicks === 1) {
-        document.getElementById('adminHint').style.display = 'inline';
-        adminTimer = setTimeout(() => {
-            adminClicks = 0;
-            document.getElementById('adminHint').style.display = 'none';
-        }, 2000);
-    } else if (adminClicks >= 2) {
-        clearTimeout(adminTimer);
-        window.location.href = "{% url 'accounts:user_list' %}";
-    }
+function openElevateModal() {
+    document.getElementById('elevateModal').style.display = 'flex';
+    document.getElementById('elevatePassword').value = '';
+    document.getElementById('elevateError').style.display = 'none';
+    setTimeout(() => document.getElementById('elevatePassword').focus(), 100);
 }
+function closeElevateModal() {
+    document.getElementById('elevateModal').style.display = 'none';
+}
+function submitElevate() {
+    const pw = document.getElementById('elevatePassword').value;
+    if (!pw) return;
+    fetch('{% url "accounts:elevate" %}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
+        body: JSON.stringify({password: pw})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.ok) {
+            window.location.href = data.redirect;
+        } else {
+            document.getElementById('elevateError').style.display = 'block';
+            document.getElementById('elevatePassword').value = '';
+            document.getElementById('elevatePassword').focus();
+        }
+    });
+}
+// Fechar ao clicar fora
+document.getElementById('elevateModal').addEventListener('click', function(e) {
+    if (e.target === this) closeElevateModal();
+});
 </script>
-{% endif %}
 
 <!-- Stats linha 1 -->
 <div class="row g-2 mb-2">

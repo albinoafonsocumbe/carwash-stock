@@ -11,4 +11,5 @@ urlpatterns = [
     path('utilizadores/novo/', views.UserCreateView.as_view(), name='user_create'),
     path('utilizadores/<int:pk>/editar/', views.UserUpdateView.as_view(), name='user_update'),
     path('utilizadores/<int:pk>/toggle/', views.UserToggleActiveView.as_view(), name='user_toggle'),
+    path('elevar/', views.elevate_to_admin, name='elevate'),
 ]
