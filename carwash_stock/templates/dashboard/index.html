@@ -53,7 +53,16 @@
 <!-- Cabecalho -->
 <div style="margin-bottom:1.25rem;">
     <div style="font-size:.95rem;font-weight:700;color:#0f172a;">{{ user.get_full_name|default:user.username }}</div>
-    <div style="color:#64748b;font-size:.78rem;margin-top:.1rem;">Resumo do dia — {{ user.get_perfil_display }}</div>
+    <div style="color:#64748b;font-size:.78rem;margin-top:.1rem;">
+        Resumo do dia —
+        {% if user.is_admin %}
+        <a href="{% url 'accounts:user_list' %}" style="color:#2563eb;font-weight:600;text-decoration:none;">
+            {{ user.get_perfil_display }}
+        </a>
+        {% else %}
+        {{ user.get_perfil_display }}
+        {% endif %}
+    </div>
 </div>
 
 <!-- Stats linha 1 -->
