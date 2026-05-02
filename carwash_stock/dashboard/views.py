@@ -8,32 +8,52 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        from products.models import Product
-        from stock.models import StockMovement
-        from lavagens.models import Lavagem
-        from django.db.models import Sum, Count
+        from django.db.models import Sum
 
         hoje = timezone.now().date()
-        todos_produtos = list(Product.objects.all())
 
-        # Produtos
-        ctx['total_produtos'] = len(todos_produtos)
-        ctx['produtos_alerta'] = [p for p in todos_produtos if p.tem_alerta]
-        ctx['produtos_normais'] = len(todos_produtos) - len(ctx['produtos_alerta'])
+        # Defaults seguros
+        ctx.update({
+            'total_produtos': 0,
+            'produtos_alerta': [],
+            'produtos_normais': 0,
+            'total_entradas_hoje': 0,
+            'total_saidas_hoje': 0,
+            'ultimas_movimentacoes': [],
+            'total_lavagens': 0,
+            'lavagens_hoje': 0,
+            'receita_hoje': 0,
+            'receita_total': 0,
+            'ultimas_lavagens': [],
+            'top_produtos': [],
+        })
 
-        # Stock hoje
-        ctx['total_entradas_hoje'] = StockMovement.objects.filter(tipo='entrada', data__date=hoje).count()
-        ctx['total_saidas_hoje'] = StockMovement.objects.filter(tipo='saida', data__date=hoje).count()
-        ctx['ultimas_movimentacoes'] = StockMovement.objects.select_related('produto').order_by('-data')[:8]
+        try:
+            from products.models import Product
+            todos_produtos = list(Product.objects.all())
+            ctx['total_produtos'] = len(todos_produtos)
+            ctx['produtos_alerta'] = [p for p in todos_produtos if p.tem_alerta]
+            ctx['produtos_normais'] = len(todos_produtos) - len(ctx['produtos_alerta'])
+            ctx['top_produtos'] = todos_produtos[:5]
+        except Exception:
+            pass
 
-        # Lavagens
-        ctx['total_lavagens'] = Lavagem.objects.count()
-        ctx['lavagens_hoje'] = Lavagem.objects.filter(data__date=hoje).count()
-        ctx['receita_hoje'] = Lavagem.objects.filter(data__date=hoje).aggregate(t=Sum('valor_cobrado'))['t'] or 0
-        ctx['receita_total'] = Lavagem.objects.aggregate(t=Sum('valor_cobrado'))['t'] or 0
-        ctx['ultimas_lavagens'] = Lavagem.objects.select_related('tipo_lavagem').order_by('-data')[:5]
+        try:
+            from stock.models import StockMovement
+            ctx['total_entradas_hoje'] = StockMovement.objects.filter(tipo='entrada', data__date=hoje).count()
+            ctx['total_saidas_hoje'] = StockMovement.objects.filter(tipo='saida', data__date=hoje).count()
+            ctx['ultimas_movimentacoes'] = list(StockMovement.objects.select_related('produto').order_by('-data')[:8])
+        except Exception:
+            pass
 
-        # Resumo de stock por produto (top 5 com mais movimento)
-        ctx['top_produtos'] = todos_produtos[:5]
+        try:
+            from lavagens.models import Lavagem
+            ctx['total_lavagens'] = Lavagem.objects.count()
+            ctx['lavagens_hoje'] = Lavagem.objects.filter(data__date=hoje).count()
+            ctx['receita_hoje'] = Lavagem.objects.filter(data__date=hoje).aggregate(t=Sum('valor_cobrado'))['t'] or 0
+            ctx['receita_total'] = Lavagem.objects.aggregate(t=Sum('valor_cobrado'))['t'] or 0
+            ctx['ultimas_lavagens'] = list(Lavagem.objects.select_related('tipo_lavagem').order_by('-data')[:5])
+        except Exception:
+            pass
 
         return ctx

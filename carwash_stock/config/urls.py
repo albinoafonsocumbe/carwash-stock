@@ -16,5 +16,5 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('reports/', include('reports.urls')),
     path('lavagens/', include('lavagens.urls')),
-    path('', RedirectView.as_view(url='/dashboard/', permanent=False)),
+    path('', RedirectView.as_view(url='/accounts/registar/', permanent=False)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
