@@ -18,7 +18,7 @@ class StockMovementListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return StockMovement.objects.select_related('produto').order_by('-data')
+        return StockMovement.objects.filter(owner=self.request.user).select_related('produto').order_by('-data')
 
 
 # Alias para a URL existente 'stock:list'
@@ -29,6 +29,11 @@ class StockEntryCreateView(AdminRequiredMixin, FormView):
     template_name = 'stock/entry_form.html'
     form_class = StockEntryForm
     success_url = reverse_lazy('stock:list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         produto = form.cleaned_data['produto']
@@ -42,12 +47,10 @@ class StockEntryCreateView(AdminRequiredMixin, FormView):
                 produto=p,
                 tipo='entrada',
                 quantidade=quantidade,
+                owner=self.request.user,
             )
 
-        messages.success(
-            self.request,
-            f'Entrada de {quantidade} {produto.unidade} de "{produto.nome}" registada com sucesso.'
-        )
+        messages.success(self.request, f'Entrada de {quantidade} {produto.unidade} de "{produto.nome}" registada com sucesso.')
         return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
@@ -60,6 +63,11 @@ class StockExitCreateView(LoginRequiredMixin, FormView):
     template_name = 'stock/exit_form.html'
     form_class = StockExitForm
     success_url = reverse_lazy('stock:list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         produto = form.cleaned_data['produto']
@@ -79,6 +87,7 @@ class StockExitCreateView(LoginRequiredMixin, FormView):
                 produto=p,
                 tipo='saida',
                 quantidade=quantidade,
+                owner=self.request.user,
             )
 
         messages.success(

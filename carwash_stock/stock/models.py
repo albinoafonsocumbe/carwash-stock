@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class StockMovement(models.Model):
@@ -14,6 +15,10 @@ class StockMovement(models.Model):
         'products.Product',
         on_delete=models.CASCADE,
         db_column='produto_id',
+    )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        null=True, blank=True, db_column='owner_id'
     )
 
     class Meta:

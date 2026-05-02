@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Product(models.Model):
@@ -7,6 +8,10 @@ class Product(models.Model):
     unidade = models.CharField(max_length=20)
     preco = models.DecimalField(max_digits=10, decimal_places=2)
     nivel_minimo = models.DecimalField(max_digits=10, decimal_places=2, default=5)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        null=True, blank=True, db_column='owner_id'
+    )
 
     class Meta:
         managed = False

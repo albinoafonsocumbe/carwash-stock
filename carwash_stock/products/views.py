@@ -6,28 +6,18 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, T
 
 from accounts.mixins import AdminRequiredMixin
 from .models import Product
-from .forms import ProductForm, CategoryFilterForm
-from .categories import CATEGORIAS, CATEGORIAS_DICT
+from .forms import ProductForm
+from .categories import CATEGORIAS
 
-
-# ---------------------------------------------------------------------------
-# Categorias (geridas como lista hardcoded — sem tabela própria)
-# ---------------------------------------------------------------------------
 
 class CategoryListView(AdminRequiredMixin, TemplateView):
     template_name = 'products/category_list.html'
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        # Para cada categoria, conta quantos produtos existem
-        # (campo 'unidade' não guarda categoria; mostramos apenas a lista)
         ctx['categorias'] = CATEGORIAS
         return ctx
 
-
-# ---------------------------------------------------------------------------
-# Produtos
-# ---------------------------------------------------------------------------
 
 class ProductListView(LoginRequiredMixin, ListView):
     model = Product
@@ -36,7 +26,7 @@ class ProductListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        qs = Product.objects.all()
+        qs = Product.objects.filter(owner=self.request.user)
         q = self.request.GET.get('q', '').strip()
         if q:
             qs = qs.filter(nome__icontains=q)
@@ -55,6 +45,7 @@ class ProductCreateView(AdminRequiredMixin, CreateView):
     success_url = reverse_lazy('products:list')
 
     def form_valid(self, form):
+        form.instance.owner = self.request.user
         messages.success(self.request, 'Produto criado com sucesso.')
         return super().form_valid(form)
 
@@ -71,6 +62,9 @@ class ProductUpdateView(AdminRequiredMixin, UpdateView):
     template_name = 'products/product_form.html'
     success_url = reverse_lazy('products:list')
 
+    def get_queryset(self):
+        return Product.objects.filter(owner=self.request.user)
+
     def form_valid(self, form):
         messages.success(self.request, 'Produto atualizado com sucesso.')
         return super().form_valid(form)
@@ -78,7 +72,7 @@ class ProductUpdateView(AdminRequiredMixin, UpdateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['titulo'] = f'Editar: {self.object.nome}'
-        ctx['btn_label'] = 'Guardar Alterações'
+        ctx['btn_label'] = 'Guardar Alteracoes'
         return ctx
 
 
@@ -87,15 +81,14 @@ class ProductDeleteView(AdminRequiredMixin, DeleteView):
     template_name = 'products/product_confirm_delete.html'
     success_url = reverse_lazy('products:list')
 
+    def get_queryset(self):
+        return Product.objects.filter(owner=self.request.user)
+
     def post(self, request, *args, **kwargs):
         produto = self.get_object()
-        # Verificar se existem movimentações associadas
         from stock.models import StockMovement
         if StockMovement.objects.filter(produto=produto).exists():
-            messages.error(
-                request,
-                f'Não é possível eliminar "{produto.nome}" porque tem movimentações de stock registadas.'
-            )
+            messages.error(request, f'Nao e possivel eliminar "{produto.nome}" porque tem movimentacoes registadas.')
             return redirect('products:list')
         messages.success(request, f'Produto "{produto.nome}" eliminado.')
         return super().post(request, *args, **kwargs)

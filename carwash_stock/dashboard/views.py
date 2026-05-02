@@ -30,7 +30,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         try:
             from products.models import Product
-            todos_produtos = list(Product.objects.all())
+            todos_produtos = list(Product.objects.filter(owner=self.request.user))
             ctx['total_produtos'] = len(todos_produtos)
             ctx['produtos_alerta'] = [p for p in todos_produtos if p.tem_alerta]
             ctx['produtos_normais'] = len(todos_produtos) - len(ctx['produtos_alerta'])
@@ -40,19 +40,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         try:
             from stock.models import StockMovement
-            ctx['total_entradas_hoje'] = StockMovement.objects.filter(tipo='entrada', data__date=hoje).count()
-            ctx['total_saidas_hoje'] = StockMovement.objects.filter(tipo='saida', data__date=hoje).count()
-            ctx['ultimas_movimentacoes'] = list(StockMovement.objects.select_related('produto').order_by('-data')[:8])
+            ctx['total_entradas_hoje'] = StockMovement.objects.filter(owner=self.request.user, tipo='entrada', data__date=hoje).count()
+            ctx['total_saidas_hoje'] = StockMovement.objects.filter(owner=self.request.user, tipo='saida', data__date=hoje).count()
+            ctx['ultimas_movimentacoes'] = list(StockMovement.objects.filter(owner=self.request.user).select_related('produto').order_by('-data')[:8])
         except Exception:
             pass
 
         try:
             from lavagens.models import Lavagem
-            ctx['total_lavagens'] = Lavagem.objects.count()
-            ctx['lavagens_hoje'] = Lavagem.objects.filter(data__date=hoje).count()
-            ctx['receita_hoje'] = Lavagem.objects.filter(data__date=hoje).aggregate(t=Sum('valor_cobrado'))['t'] or 0
-            ctx['receita_total'] = Lavagem.objects.aggregate(t=Sum('valor_cobrado'))['t'] or 0
-            ctx['ultimas_lavagens'] = list(Lavagem.objects.select_related('tipo_lavagem').order_by('-data')[:5])
+            ctx['total_lavagens'] = Lavagem.objects.filter(owner=self.request.user).count()
+            ctx['lavagens_hoje'] = Lavagem.objects.filter(owner=self.request.user, data__date=hoje).count()
+            ctx['receita_hoje'] = Lavagem.objects.filter(owner=self.request.user, data__date=hoje).aggregate(t=Sum('valor_cobrado'))['t'] or 0
+            ctx['receita_total'] = Lavagem.objects.filter(owner=self.request.user).aggregate(t=Sum('valor_cobrado'))['t'] or 0
+            ctx['ultimas_lavagens'] = list(Lavagem.objects.filter(owner=self.request.user).select_related('tipo_lavagem').order_by('-data')[:5])
         except Exception:
             pass
 

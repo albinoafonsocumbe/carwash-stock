@@ -41,7 +41,7 @@ class LavagemListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        qs = Lavagem.objects.select_related('tipo_lavagem').order_by('-data')
+        qs = Lavagem.objects.filter(owner=self.request.user).select_related('tipo_lavagem').order_by('-data')
         q = self.request.GET.get('q', '').strip()
         tipo = self.request.GET.get('tipo', '')
         if q:
@@ -54,7 +54,7 @@ class LavagemListView(LoginRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx['q'] = self.request.GET.get('q', '')
         ctx['tipo_sel'] = self.request.GET.get('tipo', '')
-        ctx['tipos'] = TipoLavagem.objects.filter(is_active=True)
+        ctx['tipos'] = TipoLavagem.objects.filter(is_active=True, owner=self.request.user)
         return ctx
 
 
@@ -66,23 +66,22 @@ class LavagemCreateView(LoginRequiredMixin, CreateView):
 
     def post(self, request, *args, **kwargs):
         self.object = None
-        form = LavagemForm(request.POST, request.FILES)
+        form = LavagemForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             return self.form_valid(form)
         return self.form_invalid(form)
 
     def form_valid(self, form):
         tipo = form.cleaned_data.get('tipo_lavagem')
-        # Funcionarios nao podem definir o valor — usa sempre o preco do servico
         if not self.request.user.is_admin():
             if tipo:
                 form.instance.valor_cobrado = tipo.preco
             else:
                 form.instance.valor_cobrado = 0
         else:
-            # Admin: se deixou 0, preenche automaticamente
             if not form.cleaned_data.get('valor_cobrado') and tipo:
                 form.instance.valor_cobrado = tipo.preco
+        form.instance.owner = self.request.user
         messages.success(self.request, f'Lavagem registada para {form.instance.matricula}.')
         return super().form_valid(form)
 
@@ -91,7 +90,7 @@ class LavagemCreateView(LoginRequiredMixin, CreateView):
         ctx['titulo'] = 'Registar Nova Lavagem'
         ctx['btn_label'] = 'Registar Lavagem'
         ctx['tipos_info'] = {t.id: {'preco': str(t.preco), 'duracao': t.duracao_minutos}
-                             for t in TipoLavagem.objects.filter(is_active=True)}
+                             for t in TipoLavagem.objects.filter(is_active=True, owner=self.request.user)}
         return ctx
 
 

@@ -5,17 +5,20 @@ from .models import StockMovement
 
 class StockEntryForm(forms.Form):
     produto = forms.ModelChoiceField(
-        queryset=Product.objects.all().order_by('nome'),
+        queryset=Product.objects.none(),
         label='Produto',
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     quantidade = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        min_value=0.01,
+        max_digits=10, decimal_places=2, min_value=0.01,
         label='Quantidade',
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0.01', 'step': '0.01'}),
     )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['produto'].queryset = Product.objects.filter(owner=user).order_by('nome')
 
     def clean_quantidade(self):
         quantidade = self.cleaned_data.get('quantidade')
@@ -26,17 +29,20 @@ class StockEntryForm(forms.Form):
 
 class StockExitForm(forms.Form):
     produto = forms.ModelChoiceField(
-        queryset=Product.objects.all().order_by('nome'),
+        queryset=Product.objects.none(),
         label='Produto',
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
     quantidade = forms.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        min_value=0.01,
+        max_digits=10, decimal_places=2, min_value=0.01,
         label='Quantidade',
         widget=forms.NumberInput(attrs={'class': 'form-control', 'min': '0.01', 'step': '0.01'}),
     )
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['produto'].queryset = Product.objects.filter(owner=user).order_by('nome')
 
     def clean(self):
         cleaned_data = super().clean()
@@ -46,8 +52,5 @@ class StockExitForm(forms.Form):
             if quantidade <= 0:
                 self.add_error('quantidade', 'A quantidade deve ser um valor positivo.')
             elif quantidade > produto.quantidade:
-                self.add_error(
-                    'quantidade',
-                    f'Stock insuficiente. Disponível: {produto.quantidade} {produto.unidade}.'
-                )
+                self.add_error('quantidade', f'Stock insuficiente. Disponivel: {produto.quantidade} {produto.unidade}.')
         return cleaned_data

@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class TipoLavagem(models.Model):
@@ -7,6 +8,10 @@ class TipoLavagem(models.Model):
     preco = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     duracao_minutos = models.IntegerField(default=30)
     is_active = models.BooleanField(default=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        null=True, blank=True, db_column='owner_id'
+    )
 
     class Meta:
         managed = False
@@ -28,6 +33,10 @@ class Lavagem(models.Model):
     funcionario = models.CharField(max_length=100, blank=True, null=True)
     valor_cobrado = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     foto = models.ImageField(upload_to='lavagens/', blank=True, null=True)
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        null=True, blank=True, db_column='owner_id'
+    )
 
     class Meta:
         managed = False

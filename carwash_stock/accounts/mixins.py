@@ -13,3 +13,8 @@ class AdminRequiredMixin(LoginRequiredMixin):
             messages.error(request, 'Nao tem permissao para aceder a esta pagina.')
             return redirect('dashboard:index')
         return super().dispatch(request, *args, **kwargs)
+
+
+def get_owner(request):
+    """Retorna o utilizador dono dos dados — o utilizador logado."""
+    return request.user

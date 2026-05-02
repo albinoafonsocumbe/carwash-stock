@@ -26,9 +26,12 @@ class LavagemForm(forms.ModelForm):
             'observacoes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Observacoes adicionais...'}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['tipo_lavagem'].queryset = TipoLavagem.objects.filter(is_active=True)
+        if user:
+            self.fields['tipo_lavagem'].queryset = TipoLavagem.objects.filter(is_active=True, owner=user)
+        else:
+            self.fields['tipo_lavagem'].queryset = TipoLavagem.objects.filter(is_active=True)
         self.fields['funcionario'].required = False
         self.fields['observacoes'].required = False
 
