@@ -289,20 +289,18 @@ from django.contrib.auth.decorators import login_required
 @login_required
 @require_POST
 def elevate_to_admin(request):
-    """Verifica a password do proprio utilizador e eleva o perfil para admin."""
+    """Verifica a password do proprio utilizador e eleva o perfil na sessao (temporario)."""
     try:
         data = json.loads(request.body)
         password = data.get('password', '')
     except Exception:
         return JsonResponse({'ok': False, 'error': 'Pedido invalido'}, status=400)
 
-    # Verificar a password do proprio utilizador logado
     if not request.user.check_password(password):
         return JsonResponse({'ok': False, 'error': 'Password incorreta'})
 
-    # Elevar o perfil para admin
-    request.user.perfil = 'admin'
-    request.user.save(update_fields=['perfil'])
+    # Guardar elevacao apenas na sessao — nao altera a base de dados
+    request.session['perfil_elevado'] = 'admin'
     return JsonResponse({'ok': True, 'redirect': '/accounts/utilizadores/'})
 
 
