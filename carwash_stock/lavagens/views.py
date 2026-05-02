@@ -107,22 +107,23 @@ class LavagemDeleteView(AdminRequiredMixin, DeleteView):
 
 # ── Tipos de Lavagem ──────────────────────────────────────────────────────────
 
-class TipoLavagemListView(AdminRequiredMixin, ListView):
+class TipoLavagemListView(LoginRequiredMixin, ListView):
     model = TipoLavagem
     template_name = 'lavagens/tipos_list.html'
     context_object_name = 'tipos'
 
     def get_queryset(self):
-        return TipoLavagem.objects.annotate(total=Count('lavagem')).order_by('nome')
+        return TipoLavagem.objects.filter(owner=self.request.user).annotate(total=Count('lavagem')).order_by('nome')
 
 
-class TipoLavagemCreateView(AdminRequiredMixin, CreateView):
+class TipoLavagemCreateView(LoginRequiredMixin, CreateView):
     model = TipoLavagem
     form_class = TipoLavagemForm
     template_name = 'lavagens/tipo_form.html'
     success_url = reverse_lazy('lavagens:tipos')
 
     def form_valid(self, form):
+        form.instance.owner = self.request.user
         messages.success(self.request, 'Tipo de lavagem criado com sucesso.')
         return super().form_valid(form)
 
@@ -133,11 +134,14 @@ class TipoLavagemCreateView(AdminRequiredMixin, CreateView):
         return ctx
 
 
-class TipoLavagemUpdateView(AdminRequiredMixin, UpdateView):
+class TipoLavagemUpdateView(LoginRequiredMixin, UpdateView):
     model = TipoLavagem
     form_class = TipoLavagemForm
     template_name = 'lavagens/tipo_form.html'
     success_url = reverse_lazy('lavagens:tipos')
+
+    def get_queryset(self):
+        return TipoLavagem.objects.filter(owner=self.request.user)
 
     def form_valid(self, form):
         messages.success(self.request, 'Tipo de lavagem atualizado.')

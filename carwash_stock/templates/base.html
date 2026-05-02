@@ -296,6 +296,9 @@
         <li><a href="{% url 'lavagens:list' %}" class="{% if request.resolver_match.app_name == 'lavagens' %}active{% endif %}" onclick="closeSidebar()">
             <i class="bi bi-car-front"></i> Registo de Lavagens
         </a></li>
+        <li><a href="{% url 'lavagens:tipos' %}" onclick="closeSidebar()">
+            <i class="bi bi-tags"></i> Tipos de Lavagem
+        </a></li>
         {% if user.is_admin %}
         <li><a href="{% url 'services:list' %}" class="{% if request.resolver_match.app_name == 'services' %}active{% endif %}" onclick="closeSidebar()">
             <i class="bi bi-list-check"></i> Servicos
