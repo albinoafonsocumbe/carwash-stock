@@ -194,6 +194,34 @@
         ::-webkit-scrollbar { width: 4px; height: 4px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
 
+        /* ── Feedback de clique nos botoes ── */
+        .btn { position: relative; overflow: hidden; }
+        .btn:active { transform: scale(.97); }
+        .btn::after {
+            content: ''; position: absolute;
+            inset: 0; background: rgba(255,255,255,.25);
+            opacity: 0; border-radius: inherit;
+            transition: opacity .15s;
+        }
+        .btn:active::after { opacity: 1; }
+
+        /* Links de navegacao */
+        .nav-items li a:active { transform: scale(.97); }
+
+        /* Botoes mobile da barra inferior */
+        .mobile-action-btn:active { transform: scale(.93); opacity: .8; }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,.35);
+            transform: scale(0); animation: ripple-anim .5s linear;
+            pointer-events: none;
+        }
+        @keyframes ripple-anim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 768px) {
             .sidebar {
@@ -292,7 +320,13 @@
             <div class="user-avatar">{{ user.username|first|upper }}</div>
             <div>
                 <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                {% if user.is_admin %}
+                <a href="{% url 'accounts:user_list' %}" class="user-role" style="text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.2);">
+                    {{ user.get_perfil_display }}
+                </a>
+                {% else %}
                 <div class="user-role">{{ user.get_perfil_display }}</div>
+                {% endif %}
             </div>
             <form method="post" action="{% url 'accounts:logout' %}">
                 {% csrf_token %}
@@ -346,8 +380,22 @@ function closeSidebar() {
     sidebar.classList.remove('open');
     overlay.classList.remove('active');
 }
-// Fechar com tecla Escape
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
+// Ripple effect em todos os botoes
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.btn, .mobile-action-btn, .nav-items li a');
+    if (!btn) return;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple';
+    const rect = btn.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    ripple.style.top  = (e.clientY - rect.top  - size / 2) + 'px';
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+});
 </script>
 {% block extra_js %}{% endblock %}
 </body>
