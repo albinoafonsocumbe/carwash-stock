@@ -407,11 +407,12 @@ class PasswordResetRequestView(View):
                     message=f'Clique no link para redefinir a sua senha:\n\n{link}\n\nO link expira em 1 hora.',
                     from_email=django_settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
-                    fail_silently=True,
+                    fail_silently=False,
                 )
                 messages.success(request, f'Email enviado para {email}. Verifique a sua caixa de entrada.')
             except Exception:
-                messages.success(request, f'Email enviado para {email}. Verifique a sua caixa de entrada.')
+                # Se o email falhar, mostrar o link directamente (para desenvolvimento)
+                messages.info(request, f'Link de recuperacao: {link}')
         except User.DoesNotExist:
             # Nao revelar se o email existe ou nao
             messages.success(request, f'Se o email {email} existir, receberá as instrucoes.')
