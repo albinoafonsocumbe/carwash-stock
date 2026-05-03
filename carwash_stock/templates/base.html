@@ -357,17 +357,13 @@
 
     <div class="sidebar-footer">
         <div class="user-row">
-            <div class="user-avatar">{{ user.username|first|upper }}</div>
-            <div>
-                <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
-                {% if user.is_admin %}
-                <a href="{% url 'accounts:user_list' %}" class="user-role" style="text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.2);">
-                    {{ user.get_perfil_display }}
-                </a>
-                {% else %}
-                <div class="user-role">{{ user.get_perfil_display }}</div>
-                {% endif %}
-            </div>
+            <a href="{% url 'accounts:profile' %}" style="text-decoration:none;display:flex;align-items:center;gap:.65rem;flex:1;min-width:0;">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div style="min-width:0;">
+                    <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                    <div class="user-role">{{ user.get_perfil_display }}</div>
+                </div>
+            </a>
             <form method="post" action="{% url 'accounts:logout' %}">
                 {% csrf_token %}
                 <button type="submit" class="logout-btn" title="Sair">

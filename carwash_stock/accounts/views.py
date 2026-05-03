@@ -465,3 +465,61 @@ class PasswordResetConfirmView(View):
         except User.DoesNotExist:
             messages.error(request, 'Utilizador nao encontrado.')
             return redirect('accounts:login')
+
+
+# ─── Perfil do utilizador ─────────────────────────────────────────────────────
+
+class ProfileView(LoginRequiredMixin, View):
+    template_name = 'accounts/profile.html'
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        action = request.POST.get('action')
+
+        if action == 'update_info':
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            email = request.POST.get('email', '').strip().lower()
+
+            if not email:
+                messages.error(request, 'O email nao pode estar vazio.')
+                return render(request, self.template_name)
+
+            # Verificar email duplicado
+            if User.objects.filter(email__iexact=email).exclude(pk=request.user.pk).exists():
+                messages.error(request, 'Este email ja esta em uso por outra conta.')
+                return render(request, self.template_name)
+
+            request.user.first_name = first_name
+            request.user.last_name = last_name
+            request.user.email = email
+            request.user.save(update_fields=['first_name', 'last_name', 'email'])
+            messages.success(request, 'Informacoes actualizadas com sucesso.')
+
+        elif action == 'change_password':
+            current = request.POST.get('current_password', '')
+            new_pw = request.POST.get('new_password', '')
+            confirm = request.POST.get('confirm_password', '')
+
+            if not request.user.check_password(current):
+                messages.error(request, 'Senha actual incorreta.')
+                return render(request, self.template_name)
+
+            if len(new_pw) < 8:
+                messages.error(request, 'A nova senha deve ter pelo menos 8 caracteres.')
+                return render(request, self.template_name)
+
+            if new_pw != confirm:
+                messages.error(request, 'As senhas nao coincidem.')
+                return render(request, self.template_name)
+
+            request.user.set_password(new_pw)
+            request.user.save()
+            # Manter sessao activa
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Senha alterada com sucesso.')
+
+        return redirect('accounts:profile')

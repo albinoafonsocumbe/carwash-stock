@@ -15,4 +15,6 @@ urlpatterns = [
     # Recuperacao de senha
     path('recuperar/', views.PasswordResetRequestView.as_view(), name='password_reset'),
     path('recuperar/<str:token>/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    # Perfil
+    path('perfil/', views.ProfileView.as_view(), name='profile'),
 ]
