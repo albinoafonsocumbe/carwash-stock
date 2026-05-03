@@ -18,39 +18,51 @@
 <div class="row g-3">
     {% for tipo in tipos %}
     <div class="col-sm-6 col-xl-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-start justify-content-between mb-2">
-                    <div>
-                        <div style="font-weight:700;font-size:.95rem;color:#0f172a;">{{ tipo.nome }}</div>
-                        {% if tipo.is_active %}
-                        <span class="badge-status bs-success mt-1 d-inline-flex">Ativo</span>
-                        {% else %}
-                        <span class="badge-status bs-gray mt-1 d-inline-flex">Inativo</span>
-                        {% endif %}
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-size:1.4rem;font-weight:800;color:#2563eb;line-height:1;">{{ tipo.preco|floatformat:0 }}</div>
-                        <div style="font-size:.65rem;color:#94a3b8;">MZN</div>
-                    </div>
+        <div class="card h-100" style="border-radius:14px;overflow:hidden;">
+
+            <!-- Foto -->
+            <div style="height:140px;overflow:hidden;background:#f1f5f9;border-bottom:1px solid #e2e8f0;position:relative;">
+                {% if tipo.foto %}
+                <img src="{{ tipo.foto.url }}" alt="{{ tipo.nome }}"
+                     style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;">
+                    <i class="bi bi-car-front" style="font-size:2rem;color:#cbd5e1;"></i>
+                    <span style="font-size:.7rem;color:#cbd5e1;">Sem foto</span>
                 </div>
-
-                {% if tipo.descricao %}
-                <p style="font-size:.8rem;color:#64748b;margin-bottom:.75rem;line-height:1.5;">{{ tipo.descricao }}</p>
                 {% endif %}
+                <!-- Preco overlay -->
+                <div style="position:absolute;top:.6rem;right:.6rem;">
+                    <span style="background:rgba(0,0,0,.6);color:#fff;font-size:.82rem;font-weight:800;padding:.25em .7em;border-radius:16px;">
+                        {{ tipo.preco|floatformat:0 }} MZN
+                    </span>
+                </div>
+                <!-- Estado -->
+                <div style="position:absolute;top:.6rem;left:.6rem;">
+                    {% if tipo.is_active %}
+                    <span style="background:#16a34a;color:#fff;font-size:.65rem;font-weight:700;padding:.25em .65em;border-radius:16px;">Ativo</span>
+                    {% else %}
+                    <span style="background:#64748b;color:#fff;font-size:.65rem;font-weight:700;padding:.25em .65em;border-radius:16px;">Inativo</span>
+                    {% endif %}
+                </div>
+            </div>
 
-                <div class="d-flex gap-3 mb-3" style="font-size:.78rem;color:#64748b;">
-                    <span><i class="bi bi-clock me-1"></i>{{ tipo.duracao_minutos }} min</span>
+            <div class="card-body" style="padding:1rem;">
+                <div style="font-weight:700;font-size:.92rem;color:#0f172a;margin-bottom:.25rem;">{{ tipo.nome }}</div>
+                {% if tipo.descricao %}
+                <div style="font-size:.78rem;color:#64748b;margin-bottom:.6rem;line-height:1.4;">{{ tipo.descricao|truncatechars:60 }}</div>
+                {% endif %}
+                <div class="d-flex gap-2 mb-3" style="font-size:.75rem;color:#64748b;">
+                    <span><i class="bi bi-clock me-1"></i>{{ tipo.tempo_display }}</span>
                     <span><i class="bi bi-car-front me-1"></i>{{ tipo.total }} lavagens</span>
                 </div>
-
                 <div class="d-flex gap-2">
                     <a href="{% url 'lavagens:create' %}?tipo={{ tipo.id }}"
                        class="btn btn-success btn-sm flex-grow-1 d-flex align-items-center justify-content-center gap-1">
                         <i class="bi bi-play-fill"></i> Iniciar
                     </a>
                     <a href="{% url 'lavagens:tipo_update' tipo.pk %}"
-                       class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                       class="btn btn-outline-primary btn-sm" title="Editar">
                         <i class="bi bi-pencil"></i>
                     </a>
                 </div>

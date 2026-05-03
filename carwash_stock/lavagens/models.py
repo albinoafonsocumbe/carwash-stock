@@ -8,6 +8,7 @@ class TipoLavagem(models.Model):
     preco = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     duracao_minutos = models.IntegerField(default=30)
     is_active = models.BooleanField(default=True)
+    foto = models.ImageField(upload_to='tipos_lavagem/', blank=True, null=True)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
         null=True, blank=True, db_column='owner_id'
@@ -20,6 +21,14 @@ class TipoLavagem(models.Model):
 
     def __str__(self):
         return self.nome
+
+    @property
+    def tempo_display(self):
+        if self.duracao_minutos >= 60:
+            h = self.duracao_minutos // 60
+            m = self.duracao_minutos % 60
+            return f'{h}h{m:02d}m' if m else f'{h}h'
+        return f'{self.duracao_minutos} min'
 
 
 class Lavagem(models.Model):

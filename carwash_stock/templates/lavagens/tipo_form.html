@@ -9,27 +9,131 @@
 {% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card">
-            <div class="card-header">{{ titulo }}</div>
-            <div class="card-body">
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    {% for field in form %}
+<div class="row g-3">
+    <div class="col-lg-7">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle" style="color:#2563eb;"></i>
+                    Informacoes do Servico
+                </div>
+                <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}<div class="text-danger mt-1" style="font-size:.8rem;">{{ field.errors.0 }}</div>{% endif %}
+                        <label class="form-label">{{ form.nome.label }} <span class="text-danger">*</span></label>
+                        {{ form.nome }}
+                        {% if form.nome.errors %}<div class="text-danger mt-1" style="font-size:.78rem;">{{ form.nome.errors.0 }}</div>{% endif %}
                     </div>
-                    {% endfor %}
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary">{{ btn_label }}</button>
-                        <a href="{% url 'lavagens:tipos' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.descricao.label }}</label>
+                        {{ form.descricao }}
                     </div>
-                </form>
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <label class="form-label">{{ form.preco.label }} <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text">MZN</span>
+                                {{ form.preco }}
+                            </div>
+                            {% if form.preco.errors %}<div class="text-danger mt-1" style="font-size:.78rem;">{{ form.preco.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label">{{ form.duracao_minutos.label }}</label>
+                            <div class="input-group">
+                                {{ form.duracao_minutos }}
+                                <span class="input-group-text">min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Foto -->
+            <div class="card mb-3">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-image" style="color:#d97706;"></i>
+                    Foto do Servico
+                </div>
+                <div class="card-body">
+                    {% if form.instance.foto %}
+                    <div style="margin-bottom:1rem;">
+                        <img src="{{ form.instance.foto.url }}" alt="Foto actual"
+                             style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;">
+                        <div style="font-size:.75rem;color:#64748b;margin-top:.4rem;">Foto actual — carregue uma nova para substituir</div>
+                    </div>
+                    {% endif %}
+                    <label class="camera-btn" for="id_foto" style="display:flex;align-items:center;justify-content:center;gap:.5rem;width:100%;padding:.75rem;border:2px dashed #e2e8f0;border-radius:10px;background:#f8fafc;color:#64748b;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .15s;">
+                        <i class="bi bi-camera" style="font-size:1.2rem;"></i>
+                        <span id="fotoLabel">Escolher foto do servico</span>
+                    </label>
+                    <div style="display:none;">{{ form.foto }}</div>
+                    <div id="fotoPreview" style="display:none;margin-top:.75rem;">
+                        <img id="fotoImg" src="" alt="Preview"
+                             style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;">
+                    </div>
+                    <div class="form-text">Formatos: JPG, PNG, WEBP</div>
+                </div>
+            </div>
+
+            <!-- Estado -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        {{ form.is_active }}
+                        <label class="form-check-label ms-2" style="font-weight:600;">Servico Ativo</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary d-flex align-items-center gap-1">
+                    <i class="bi bi-check-lg"></i> {{ btn_label }}
+                </button>
+                <a href="{% url 'lavagens:tipos' %}" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card" style="position:sticky;top:70px;background:#f0fdf4;border:1.5px solid #bbf7d0;">
+            <div class="card-body">
+                <div style="font-weight:700;color:#065f46;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;">
+                    <i class="bi bi-lightbulb-fill" style="color:#16a34a;"></i> Dicas
+                </div>
+                <ul style="font-size:.82rem;color:#374151;padding-left:1.1rem;margin:0;line-height:2;">
+                    <li>O <strong>preco</strong> e cobrado por lavagem</li>
+                    <li>A <strong>duracao</strong> ajuda a planear o dia</li>
+                    <li>A <strong>foto</strong> aparece no cartao do servico</li>
+                    <li>Servicos <strong>inativos</strong> nao aparecem no registo</li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fotoInput = document.getElementById('id_foto');
+const fotoPreview = document.getElementById('fotoPreview');
+const fotoImg = document.getElementById('fotoImg');
+const fotoLabel = document.getElementById('fotoLabel');
+
+if (fotoInput) {
+    fotoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                fotoImg.src = e.target.result;
+                fotoPreview.style.display = 'block';
+                fotoLabel.textContent = file.name;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+</script>
 {% endblock %}

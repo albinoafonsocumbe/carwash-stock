@@ -122,6 +122,13 @@ class TipoLavagemCreateView(LoginRequiredMixin, CreateView):
     template_name = 'lavagens/tipo_form.html'
     success_url = reverse_lazy('lavagens:tipos')
 
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = TipoLavagemForm(request.POST, request.FILES)
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.render_to_response(self.get_context_data(form=form))
+
     def form_valid(self, form):
         form.instance.owner = self.request.user
         messages.success(self.request, 'Tipo de lavagem criado com sucesso.')
@@ -142,6 +149,13 @@ class TipoLavagemUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         return TipoLavagem.objects.filter(owner=self.request.user)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = TipoLavagemForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.render_to_response(self.get_context_data(form=form))
 
     def form_valid(self, form):
         messages.success(self.request, 'Tipo de lavagem atualizado.')

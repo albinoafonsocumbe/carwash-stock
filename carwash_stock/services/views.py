@@ -37,22 +37,22 @@ class ServiceCreateView(AdminRequiredMixin, CreateView):
         ctx['btn_label'] = 'Criar Serviço'
         return ctx
 
-    def form_valid(self, form):
-        formset = ServiceProductFormSet(self.request.POST, instance=None)
-        with transaction.atomic():
-            self.object = form.save()
-            formset2 = ServiceProductFormSet(self.request.POST, instance=self.object)
-            if formset2.is_valid():
-                formset2.save()
-        messages.success(self.request, f'Serviço "{self.object.nome}" criado com sucesso.')
-        return redirect(self.success_url)
-
     def post(self, request, *args, **kwargs):
         self.object = None
-        form = self.get_form()
+        form = ServiceForm(request.POST, request.FILES)
         if form.is_valid():
             return self.form_valid(form)
-        return self.form_invalid(form)
+        self.object = None
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            self.object = form.save()
+            formset = ServiceProductFormSet(self.request.POST, instance=self.object)
+            if formset.is_valid():
+                formset.save()
+        messages.success(self.request, f'Serviço "{self.object.nome}" criado com sucesso.')
+        return redirect(self.success_url)
 
 
 class ServiceUpdateView(AdminRequiredMixin, UpdateView):
@@ -71,6 +71,13 @@ class ServiceUpdateView(AdminRequiredMixin, UpdateView):
         ctx['btn_label'] = 'Guardar Alterações'
         return ctx
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = ServiceForm(request.POST, request.FILES, instance=self.object)
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.render_to_response(self.get_context_data(form=form))
+
     def form_valid(self, form):
         with transaction.atomic():
             self.object = form.save()
@@ -79,13 +86,6 @@ class ServiceUpdateView(AdminRequiredMixin, UpdateView):
                 formset.save()
         messages.success(self.request, f'Serviço "{self.object.nome}" atualizado com sucesso.')
         return redirect(self.success_url)
-
-    def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        form = self.get_form()
-        if form.is_valid():
-            return self.form_valid(form)
-        return self.form_invalid(form)
 
 
 class ServiceDeleteView(AdminRequiredMixin, DeleteView):

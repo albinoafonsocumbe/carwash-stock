@@ -42,17 +42,20 @@ class LavagemForm(forms.ModelForm):
 class TipoLavagemForm(forms.ModelForm):
     class Meta:
         model = TipoLavagem
-        fields = ['nome', 'descricao', 'preco', 'duracao_minutos', 'is_active']
+        fields = ['nome', 'descricao', 'preco', 'duracao_minutos', 'foto', 'is_active']
         labels = {
-            'nome': 'Nome do Serviço',
-            'descricao': 'Descrição',
-            'preco': 'Preço (MZN)',
-            'duracao_minutos': 'Duração (minutos)',
+            'nome': 'Nome do Servico',
+            'descricao': 'Descricao',
+            'preco': 'Preco (MZN)',
+            'duracao_minutos': 'Duracao (minutos)',
+            'foto': 'Foto do Servico',
             'is_active': 'Ativo',
         }
         widgets = {
-            'nome': forms.TextInput(attrs={'class': 'form-control'}),
-            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Lavagem Completa'}),
+            'descricao': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Descricao do servico...'}),
             'preco': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'step': '0.01'}),
             'duracao_minutos': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'foto': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
