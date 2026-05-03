@@ -357,7 +357,7 @@
 
     <div class="sidebar-footer">
         <div class="user-row">
-            <a href="{% url 'accounts:profile' %}" style="text-decoration:none;display:flex;align-items:center;gap:.65rem;flex:1;min-width:0;">
+            <a href="/accounts/perfil/" style="text-decoration:none;display:flex;align-items:center;gap:.65rem;flex:1;min-width:0;">
                 <div class="user-avatar">{{ user.username|first|upper }}</div>
                 <div style="min-width:0;">
                     <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
