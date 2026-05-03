@@ -364,3 +364,104 @@ class RegisterView(View):
             messages.success(request, f'Conta criada com sucesso! Pode agora entrar com o email {user.email}.')
             return redirect('accounts:login')
         return render(request, self.template_name, {'form': form})
+
+
+# ─── Recuperacao de senha ─────────────────────────────────────────────────────
+
+import secrets
+from django.core.mail import send_mail
+from django.conf import settings as django_settings
+
+# Armazenamento simples em memoria dos tokens (funciona para instancia unica)
+# Para producao multi-instancia usar cache/DB
+_reset_tokens = {}  # {token: {'user_id': int, 'expires': datetime}}
+
+
+class PasswordResetRequestView(View):
+    template_name = 'accounts/password_reset.html'
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('dashboard:index')
+        return render(request, self.template_name)
+
+    def post(self, request):
+        email = request.POST.get('email', '').strip().lower()
+        try:
+            user = User.objects.get(email__iexact=email)
+            # Gerar token unico
+            token = secrets.token_urlsafe(32)
+            _reset_tokens[token] = {
+                'user_id': user.pk,
+                'expires': timezone.now() + timedelta(hours=1),
+            }
+            # Construir link
+            domain = request.get_host()
+            scheme = 'https' if request.is_secure() else 'http'
+            link = f'{scheme}://{domain}/accounts/recuperar/{token}/'
+
+            # Enviar email
+            try:
+                send_mail(
+                    subject='Recuperacao de senha — CarWash Stock',
+                    message=f'Clique no link para redefinir a sua senha:\n\n{link}\n\nO link expira em 1 hora.',
+                    from_email=django_settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, f'Email enviado para {email}. Verifique a sua caixa de entrada.')
+            except Exception:
+                # Se o email falhar, mostrar o link directamente (para desenvolvimento)
+                messages.info(request, f'Link de recuperacao: {link}')
+        except User.DoesNotExist:
+            # Nao revelar se o email existe ou nao
+            messages.success(request, f'Se o email {email} existir, receberá as instrucoes.')
+
+        return redirect('accounts:login')
+
+
+class PasswordResetConfirmView(View):
+    template_name = 'accounts/password_reset_confirm.html'
+
+    def _get_token_data(self, token):
+        data = _reset_tokens.get(token)
+        if not data:
+            return None
+        if timezone.now() > data['expires']:
+            _reset_tokens.pop(token, None)
+            return None
+        return data
+
+    def get(self, request, token):
+        if not self._get_token_data(token):
+            messages.error(request, 'Link invalido ou expirado. Solicite um novo.')
+            return redirect('accounts:password_reset')
+        return render(request, self.template_name, {'token': token})
+
+    def post(self, request, token):
+        data = self._get_token_data(token)
+        if not data:
+            messages.error(request, 'Link invalido ou expirado.')
+            return redirect('accounts:password_reset')
+
+        password = request.POST.get('password', '')
+        confirm = request.POST.get('password_confirm', '')
+
+        if len(password) < 8:
+            messages.error(request, 'A senha deve ter pelo menos 8 caracteres.')
+            return render(request, self.template_name, {'token': token})
+
+        if password != confirm:
+            messages.error(request, 'As senhas nao coincidem.')
+            return render(request, self.template_name, {'token': token})
+
+        try:
+            user = User.objects.get(pk=data['user_id'])
+            user.set_password(password)
+            user.save()
+            _reset_tokens.pop(token, None)
+            messages.success(request, 'Senha alterada com sucesso. Pode agora entrar.')
+            return redirect('accounts:login')
+        except User.DoesNotExist:
+            messages.error(request, 'Utilizador nao encontrado.')
+            return redirect('accounts:login')
