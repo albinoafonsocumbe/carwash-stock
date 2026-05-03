@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.utils import timezone
+import json
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
@@ -8,24 +9,19 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        from django.db.models import Sum
+        from django.db.models import Sum, Count
+        from datetime import timedelta
 
         hoje = timezone.now().date()
 
-        # Defaults seguros
         ctx.update({
-            'total_produtos': 0,
-            'produtos_alerta': [],
-            'produtos_normais': 0,
-            'total_entradas_hoje': 0,
-            'total_saidas_hoje': 0,
-            'ultimas_movimentacoes': [],
-            'total_lavagens': 0,
-            'lavagens_hoje': 0,
-            'receita_hoje': 0,
-            'receita_total': 0,
-            'ultimas_lavagens': [],
-            'top_produtos': [],
+            'total_produtos': 0, 'produtos_alerta': [], 'produtos_normais': 0,
+            'total_entradas_hoje': 0, 'total_saidas_hoje': 0, 'ultimas_movimentacoes': [],
+            'total_lavagens': 0, 'lavagens_hoje': 0, 'receita_hoje': 0,
+            'receita_total': 0, 'ultimas_lavagens': [], 'top_produtos': [],
+            'chart_labels': json.dumps([]),
+            'chart_receita': json.dumps([]),
+            'chart_lavagens': json.dumps([]),
         })
 
         try:
@@ -53,6 +49,22 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             ctx['receita_hoje'] = Lavagem.objects.filter(owner=self.request.user, data__date=hoje).aggregate(t=Sum('valor_cobrado'))['t'] or 0
             ctx['receita_total'] = Lavagem.objects.filter(owner=self.request.user).aggregate(t=Sum('valor_cobrado'))['t'] or 0
             ctx['ultimas_lavagens'] = list(Lavagem.objects.filter(owner=self.request.user).select_related('tipo_lavagem').order_by('-data')[:5])
+
+            # Dados para graficos — ultimos 7 dias
+            labels = []
+            receita_dias = []
+            lavagens_dias = []
+            for i in range(6, -1, -1):
+                dia = hoje - timedelta(days=i)
+                labels.append(dia.strftime('%d/%m'))
+                r = Lavagem.objects.filter(owner=self.request.user, data__date=dia).aggregate(t=Sum('valor_cobrado'))['t'] or 0
+                l = Lavagem.objects.filter(owner=self.request.user, data__date=dia).count()
+                receita_dias.append(float(r))
+                lavagens_dias.append(l)
+
+            ctx['chart_labels'] = json.dumps(labels)
+            ctx['chart_receita'] = json.dumps(receita_dias)
+            ctx['chart_lavagens'] = json.dumps(lavagens_dias)
         except Exception:
             pass
 
